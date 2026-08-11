@@ -176,6 +176,7 @@
       <button class="iconbtn" id="btnUndo"  title="Zug rückgängig">↩</button>
       <button class="iconbtn" id="btnReset" title="Zurücksetzen">⟳</button>
       <button class="iconbtn" id="btnHint"  title="Lösung kurz anzeigen">💡</button>
+      <button class="iconbtn" id="btnAuto"  title="Automatisch lösen">🤖</button>
       <button class="iconbtn" id="btnMenu"  title="Menü">⊞</button>
       <button class="iconbtn" id="btnSound" title="Effekte an/aus">🔊</button>
       <button class="iconbtn" id="btnMusic" title="Musik an/aus">🎵</button>
@@ -300,7 +301,7 @@ const LEVELS=[
   prism:[{x:2,y:3,o:0}], mirrors:[{x:2,y:0,o:1}], movables:[{x:4,y:5,o:0}],
   portals:[{a:{x:5,y:3},b:{x:8,y:5}}], blocks:[{x:6,y:2},{x:6,y:4}],
   targets:[{x:9,y:5,c:1},{x:9,y:0,c:2},{x:9,y:6,c:3}]},
- {name:"Magenta-Morgen", hint:"Neu: Magenta 🩷 = ROT + BLAU gleichzeitig!",
+ {name:"Magenta-Morgen", hint:"Magenta 🩷 = ROT + BLAU gleichzeitig!",
   w:9,h:7, emitter:{x:0,y:3,d:1},
   prism:[{x:2,y:3,o:1}],
   mirrors:[{x:6,y:3,o:0},{x:2,y:6,o:0},{x:6,y:6,o:1},{x:2,y:0,o:1}],
@@ -340,14 +341,15 @@ const overlay=document.getElementById('overlay');
 const elLvlnum=document.getElementById('lvlnum'), elLvlname=document.getElementById('lvlname');
 const elMoves=document.getElementById('moves'), elHint=document.getElementById('hint'), elDots=document.getElementById('dots');
 const btnUndo=document.getElementById('btnUndo'), btnReset=document.getElementById('btnReset');
-const btnHint=document.getElementById('btnHint'), btnMenu=document.getElementById('btnMenu');
+const btnHint=document.getElementById('btnHint'), btnAuto=document.getElementById('btnAuto');
+const btnMenu=document.getElementById('btnMenu');
 const btnSound=document.getElementById('btnSound'), btnMusic=document.getElementById('btnMusic');
 const edbar=document.getElementById('edbar'), paletteEl=document.getElementById('palette'), edMsgEl=document.getElementById('edMsg');
 
 // ================= State =================
 let cur=null, cell=48, pad=14, dpr=1, viewW=8, viewH=6;
 let hoverObj=null, hoverKey=null, parts=[], rings=[], edTrace=null, drag=null, litSet=new Set();
-let downPos=null, downCellObj=null;
+let downPos=null, downCellObj=null, lastRotKey='', lastRotT=0, lastDragT=0;
 const state={ screen:'hub', started:false, current:0, maxUnlocked:0,
               stars:new Array(LEVELS.length).fill(0), totalMoves:0,
               bestTimes:new Array(LEVELS.length).fill(null),
@@ -568,7 +570,7 @@ function solve(level){
     rots.forEach((c,i)=>orient.set(c.x+","+c.y,(st.mask>>i)&1));
     st.movs.forEach(m=>orient.set(m.x+","+m.y,m.o));
     const tr=traceLevel({...level,movables:st.movs},orient);
-    if(evalWin(level,tr)) return {dist:dd, mask:st.mask, rots};
+    if(evalWin(level,tr)) return {dist:dd, mask:st.mask, rots, movs:st.movs.map(m=>({...m}))};
     const push=(mask2,mv2)=>{ const k=enc(mask2,mv2); if(!dist.has(k)){ dist.set(k,dd+1); queue.push({mask:mask2,movs:mv2,key:k}); } };
     for(let i=0;i<nR;i++) push(st.mask^(1<<i), st.movs);
     st.movs.forEach((m,mi)=>{
@@ -603,11 +605,13 @@ function startLevel(levelObj, mode, meta){
     name:src.name||'Rätsel', hint:src.hint||''
   };
   cur={ idx:(meta&&meta.idx)||0, token:{}, lvl, mode, meta:meta||{}, src:levelObj,
-        moves:0, won:false, earned:0, litKeys:new Set(), hist:[], hintUntil:0, hintSol:null,
+        moves:0, won:false, earned:0, litKeys=new Set(), hist:[], hintUntil:0, hintSol:null,
+        solution:null, autoUsed:false,
         flashT:0, t0:performance.now(), timeSec:0 };
   const sol=solve(lvl);
   cur.opt = sol ? sol.dist : null;
   if(sol){
+    cur.solution={mask:sol.mask, rots:sol.rots, movs:sol.movs};
     const map=new Map();
     sol.rots.forEach((c,k)=>map.set(c.x+","+c.y,(sol.mask>>k)&1));
     cur.hintSol=map;
@@ -651,7 +655,7 @@ function winLevel(){
   cur.won=true; cur.flashT=performance.now();
   cur.timeSec=(performance.now()-cur.t0)/1000;
   const opt=cur.opt!=null?cur.opt:cur.moves;
-  cur.earned = cur.moves<=opt ? 3 : cur.moves<=opt+2 ? 2 : 1;
+  cur.earned = cur.autoUsed ? 1 : (cur.moves<=opt ? 3 : cur.moves<=opt+2 ? 2 : 1);
   if(cur.mode==='campaign'){
     state.stars[cur.idx]=Math.max(state.stars[cur.idx],cur.earned);
     state.totalMoves+=cur.moves;
@@ -671,7 +675,7 @@ setInterval(()=>{
   try{
     if(cur && cur.won && overlay.classList.contains('hidden') &&
        performance.now()-cur.flashT>1600 &&
-       (state.screen==='play'||state.screen==='test'||state.screen==='daily')){
+       (state.screen==='play'||state.screen==='test')){
       showWinOverlay();
     }
   }catch(e){}
@@ -739,7 +743,8 @@ function showHub(){
      ${customHtml}
      <ul class="rules">
        <li>🪞 Tipp = kippen · 🪞⇄ bewegliche Spiegel: Ziehen = verschieben</li>
-       <li>🎨 Filter · 🌀 Portale · ⏩ Ventile · 🟡🩷🩵 Mix = zwei Farben gleichzeitig</li>
+       <li>🎨 Filter ·  Portale · ⏩ Ventile · 🟡🩷🩵 Mix = zwei Farben gleichzeitig</li>
+       <li>🤖 steckt fest? Der Roboter löst jedes Level für dich.</li>
      </ul>
    </div>`);
   document.getElementById('mPlay').addEventListener('click',()=>{
@@ -817,11 +822,12 @@ function showWinOverlay(){
              <button class="btn ghost" id="btnAgain">↻</button>`;
   }
   const bt=(m==='campaign'&&state.bestTimes[cur.idx]!=null)?(' · 🥇 '+fmtTime(state.bestTimes[cur.idx])):'';
+  const au=cur.autoUsed?' · 🤖':'';
   showOverlay(`
    <div class="panel">
      <div class="big">${head}</div>
      ${starsHtml(cur.earned)}
-     <p class="stat">Züge: ${cur.moves} &nbsp;·&nbsp; Optimum: ${cur.opt!=null?cur.opt:'–'} &nbsp;·&nbsp; ⏱ ${fmtTime(cur.timeSec)}${bt}</p>
+     <p class="stat">Züge: ${cur.moves} &nbsp;·&nbsp; Optimum: ${cur.opt!=null?cur.opt:'–'} &nbsp;·&nbsp; ⏱ ${fmtTime(cur.timeSec)}${bt}${au}</p>
      <div class="btnrow">${buttons}</div>
    </div>`);
   const bn=document.getElementById('btnNext');
@@ -1085,7 +1091,7 @@ document.getElementById('edExit').addEventListener('click',()=>{
   edbar.classList.add('hidden'); showHub();
 });
 
-// ================= Eingabe (robust: Rotation auf pointerup) =================
+// ================= Eingabe (3-fach abgesichert) =================
 function eventToCell(e){
   const r=cv.getBoundingClientRect();
   const x=e.clientX-r.left, y=e.clientY-r.top;
@@ -1114,6 +1120,7 @@ function occSet(){
   return s;
 }
 function rotateNow(c){
+  lastRotKey=c.x+","+c.y; lastRotT=performance.now();
   cur.hist.push({t:'rot',x:c.x,y:c.y,o:c.o});
   c.o^=1;
   const v=cur.vis.get(c);
@@ -1123,6 +1130,7 @@ function rotateNow(c){
   retrace(false);
   updateHUD();
 }
+// Pfad 1: pointerdown merkt sich Zelle, pointerup rotiert (Tap)
 cv.addEventListener('pointerdown',e=>{
   ensureAudio();
   if(state.screen==='editor'){
@@ -1158,6 +1166,7 @@ window.addEventListener('pointermove',e=>{
 window.addEventListener('pointerup',e=>{
   if(drag){
     const d=drag; drag=null; downPos=null; downCellObj=null;
+    lastDragT=performance.now();
     if(!cur || cur.won) return;
     if(!d.active){ rotateNow(d.m); return; }
     const r=cv.getBoundingClientRect();
@@ -1184,8 +1193,20 @@ window.addEventListener('pointerup',e=>{
   const moved = dp ? Math.hypot(e.clientX-dp.x, e.clientY-dp.y) : 99;
   if(moved<14) rotateNow(c);
 });
+// Pfad 2: klassisches click als Fallback (mit Doppel-Schutz)
+cv.addEventListener('click',e=>{
+  if(state.screen!=='play' && state.screen!=='test') return;
+  if(!cur || cur.won) return;
+  if(performance.now()-lastDragT<500) return;
+  const pos=eventToCell(e); if(!pos) return;
+  const key=pos.gx+","+pos.gy;
+  if(key===lastRotKey && performance.now()-lastRotT<500) return;
+  const c=findRot(pos.gx,pos.gy); if(!c) return;
+  rotateNow(c);
+});
 cv.addEventListener('pointercancel',()=>{ drag=null; downPos=null; downCellObj=null; });
 cv.addEventListener('mouseleave',()=>{ hoverObj=null; hoverKey=null; });
+cv.addEventListener('contextmenu',e=>e.preventDefault());
 
 btnUndo.addEventListener('click',()=>{
   if(!cur||cur.won||(state.screen!=='play'&&state.screen!=='test')||!cur.hist.length) return;
@@ -1212,6 +1233,32 @@ btnHint.addEventListener('click',()=>{
   if(!cur||cur.won||!cur.hintSol||(state.screen!=='play'&&state.screen!=='test')) return;
   cur.hintUntil=performance.now()+2800;
   sHint();
+});
+// Pfad 3: 🤖 Auto-Lösen – garantiert jedes Level beendbar
+btnAuto.addEventListener('click',()=>{
+  if(!cur||cur.won||!cur.solution) return;
+  if(state.screen!=='play' && state.screen!=='test') return;
+  cur.autoUsed=true;
+  const S=cur.solution;
+  S.rots.forEach((c,i)=>{
+    const o=(S.mask>>i)&1;
+    if(c.o!==o){
+      c.o=o;
+      const v=cur.vis.get(c);
+      if(v){ v.ta=angOf(o); v.flash=performance.now(); }
+    }
+  });
+  if(S.movs) cur.lvl.movables.forEach((m,i)=>{
+    const s=S.movs[i];
+    if(s && (m.x!==s.x||m.y!==s.y||m.o!==s.o)){
+      m.x=s.x; m.y=s.y; m.o=s.o;
+      const v=cur.vis.get(m);
+      if(v){ v.ta=angOf(s.o); v.flash=performance.now(); }
+    }
+  });
+  beep(700,0.12,'sine',0.1); beep(900,0.12,'sine',0.1,0.1);
+  retrace(false);
+  updateHUD();
 });
 btnMenu.addEventListener('click',()=>{
   if(state.screen==='test'){ hideOverlay(); backToEditor(); return; }
@@ -1260,7 +1307,7 @@ function resize(){
   viewW=w; viewH=h;
   const stageW=document.getElementById('stage').clientWidth;
   const availH=Math.max(240, Math.min(window.innerHeight*0.72, 640));
-  cell=Math.max(26, Math.floor(Math.min((stageW-16)/w,(availH-16)/h)));
+  cell=Math.max(32, Math.floor(Math.min((stageW-16)/w,(availH-16)/h)));
   pad=Math.max(10, Math.round(cell*0.3));
   const cw=cell*w+pad*2, ch=cell*h+pad*2;
   dpr=window.devicePixelRatio||1;
@@ -1667,7 +1714,7 @@ function render(t){
     if(state.screen==='editor'){ drawEditorScene(t); return; }
     if(!cur) return;
     drawGameScene(t,dt);
-  }catch(err){ /* Render-Failsafe: Loop bleibt am Leben */ }
+  }catch(err){ /* Render-Failsafe */ }
 }
 
 // ================= Start =================
