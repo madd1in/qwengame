@@ -8,10 +8,9 @@
 <style>
   :root{ --cyan:#5fe0ff; --gold:#ffd76a; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body{ margin:0; padding:0; }
   html{ font-size:17px; }
   body{
-    min-height:100dvh; color:#dbe7ff; user-select:none; font-size:1rem;
+    margin:0; min-height:100dvh; color:#dbe7ff; user-select:none; font-size:1rem;
     font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:
       radial-gradient(1100px 600px at 15% -10%, #14203c 0%, transparent 60%),
@@ -36,116 +35,127 @@
   #app{ width:100%; max-width:760px; padding:10px 12px 26px; position:relative; z-index:1; }
   header{ text-align:center; padding:6px 0 2px; }
   header h1{
-    margin:0; font-size:clamp(1.5rem,5vw,2.1rem); font-weight:800; letter-spacing:.34em; padding-left:.34em;
+    margin:0; font-size:clamp(1.6rem,5.5vw,2.2rem); font-weight:800; letter-spacing:.34em; padding-left:.34em;
     background:linear-gradient(90deg,#7fe8ff,#c9b2ff 55%,#ffd76a);
     -webkit-background-clip:text; background-clip:text; color:transparent;
     filter:drop-shadow(0 0 14px rgba(127,232,255,.35));
   }
-  header p{ margin:3px 0 0; color:#7f93b8; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; }
+  header p{ margin:3px 0 0; color:#7f93b8; font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; }
   #topbar{
     display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;
-    margin:10px 0 8px; padding:9px 12px; border-radius:14px;
+    margin:10px 0 8px; padding:10px 12px; border-radius:14px;
     background:rgba(255,255,255,.045); border:1px solid rgba(140,180,255,.14);
   }
   #lvlinfo{ display:flex; flex-direction:column; min-width:120px; }
-  #lvlnum{ font-size:.7rem; letter-spacing:.14em; color:#7f93b8; text-transform:uppercase; }
-  #lvlname{ font-size:1.05rem; font-weight:700; color:#eaf3ff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #lvlnum{ font-size:.78rem; letter-spacing:.14em; color:#7f93b8; text-transform:uppercase; }
+  #lvlname{ font-size:1.15rem; font-weight:700; color:#eaf3ff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   #tb-right{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  #moves{ font-size:.85rem; color:#a9bce0; margin-right:2px; white-space:nowrap; }
+  #moves{ font-size:.95rem; color:#a9bce0; margin-right:2px; white-space:nowrap; }
   .iconbtn{
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16);
-    color:#cfe6ff; width:2.3rem; height:2.3rem; border-radius:11px; cursor:pointer; font-size:1.05rem; line-height:1; padding:0;
+    color:#cfe6ff; width:2.5rem; height:2.5rem; border-radius:12px; cursor:pointer; font-size:1.15rem; line-height:1; padding:0;
   }
   .iconbtn:hover{ background:rgba(255,255,255,.12); }
-  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:150px; }
+  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:160px; }
   .dot{ width:8px; height:8px; border-radius:50%; background:#2a3450; border:1px solid #3b4a72; }
   .dot.done{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 8px rgba(95,224,255,.7); }
   .dot.cur{ border-color:#c9b2ff; box-shadow:0 0 0 3px rgba(201,178,255,.22); }
   #stage{ position:relative; display:flex; justify-content:center; }
   canvas{ touch-action:none; border-radius:16px; display:block; }
-  #hint{ text-align:center; color:#9db1d6; font-size:.92rem; min-height:1.4rem; margin:10px 4px 0; }
+  #hint{ text-align:center; color:#9db1d6; font-size:1rem; min-height:1.5rem; margin:10px 4px 0; }
   #hint .opt{ color:#66799f; }
   #overlay{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    background:rgba(5,8,16,.72); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-    border-radius:16px; z-index:5;
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:12px;
+    background:rgba(5,8,16,.78); backdrop-filter:blur(7px); -webkit-backdrop-filter:blur(7px);
+    z-index:50;
   }
   .hidden{ display:none !important; }
   .panel{
     background:linear-gradient(180deg,#111c33,#0b1222);
     border:1px solid rgba(130,180,255,.22); border-radius:18px;
-    padding:1.4rem 1.5rem; text-align:center; max-width:94%; max-height:96%; overflow:auto;
+    padding:1.5rem 1.6rem; text-align:center; max-width:96%; width:480px; max-height:94dvh; overflow:auto;
     box-shadow:0 24px 60px rgba(0,0,0,.55);
   }
-  .panel.wide{ width:520px; }
-  .panel .big{ font-size:1.45rem; font-weight:800; letter-spacing:.1em; color:#eaf3ff; }
+  .panel .big{ font-size:1.55rem; font-weight:800; letter-spacing:.1em; color:#eaf3ff; }
   .panel .big.brand{
-    font-size:clamp(1.5rem,5vw,2rem); letter-spacing:.26em; padding-left:.26em;
+    font-size:clamp(1.6rem,6vw,2.1rem); letter-spacing:.26em; padding-left:.26em;
     background:linear-gradient(90deg,#7fe8ff,#c9b2ff 55%,#ffd76a);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .panel .sub{ color:#8fa3c8; font-size:.85rem; margin:8px 0 0; }
+  .panel .sub{ color:#8fa3c8; font-size:.95rem; margin:8px 0 0; }
   .menu{ display:flex; flex-direction:column; gap:9px; margin:16px 0 4px; }
   .mbtn{
     display:flex; justify-content:space-between; align-items:center; gap:14px;
     background:rgba(255,255,255,.055); border:1px solid rgba(140,180,255,.18); color:#eaf3ff;
-    border-radius:13px; padding:.75rem 1rem; font-size:.95rem; font-weight:700; cursor:pointer;
+    border-radius:13px; padding:.85rem 1.05rem; font-size:1.05rem; font-weight:700; cursor:pointer;
     font-family:inherit; text-align:left;
   }
   .mbtn:hover{ background:rgba(255,255,255,.11); border-color:rgba(140,200,255,.42); }
-  .mbtn span{ font-size:.72rem; color:#8fa3c8; font-weight:500; text-align:right; flex-shrink:0; }
-  .csec{ margin-top:12px; font-size:.75rem; color:#7f93b8; letter-spacing:.1em; text-transform:uppercase; }
+  .mbtn span{ font-size:.8rem; color:#8fa3c8; font-weight:500; text-align:right; flex-shrink:0; }
+  .csec{ margin-top:12px; font-size:.8rem; color:#7f93b8; letter-spacing:.1em; text-transform:uppercase; }
   .crow{ display:flex; gap:8px; margin-top:7px; }
-  .crow .mbtn{ flex:1; padding:9px 14px; font-size:.85rem; }
-  .cdel{ background:rgba(255,90,110,.12); border:1px solid rgba(255,90,110,.35); color:#ff9daa; width:42px; border-radius:13px; cursor:pointer; font-size:.9rem; }
+  .crow .mbtn{ flex:1; padding:9px 14px; font-size:.95rem; }
+  .cdel{ background:rgba(255,90,110,.12); border:1px solid rgba(255,90,110,.35); color:#ff9daa; width:44px; border-radius:13px; cursor:pointer; font-size:1rem; }
   .rules{ list-style:none; padding:0; margin:14px 0 4px; text-align:left; display:inline-block; }
-  .rules li{ margin:7px 0; font-size:.82rem; color:#9fb2d4; max-width:400px; }
+  .rules li{ margin:8px 0; font-size:.92rem; color:#9fb2d4; max-width:420px; }
   .btn{
     background:linear-gradient(180deg,#3fdcff,#0ea5d8); color:#04202c; font-weight:800;
-    border:none; padding:.75rem 1.5rem; border-radius:999px; cursor:pointer; font-size:1rem;
+    border:none; padding:.8rem 1.6rem; border-radius:999px; cursor:pointer; font-size:1.05rem;
     box-shadow:0 6px 20px rgba(40,200,255,.35); letter-spacing:.03em;
   }
   .btn:hover{ filter:brightness(1.12); }
   .btn.ghost{ background:rgba(255,255,255,.08); color:#cfe6ff; box-shadow:none; border:1px solid rgba(255,255,255,.2); font-weight:600; }
-  .btnrow{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:4px; }
+  .btnrow{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:6px; }
   .stars{ margin:14px 0 4px; }
-  .stars span{ display:inline-block; font-size:2.5rem; color:#39415a; margin:0 5px; }
+  .stars span{ display:inline-block; font-size:2.7rem; color:#39415a; margin:0 5px; }
   .stars span.on{ color:var(--gold); text-shadow:0 0 18px rgba(255,205,90,.75); animation:pop .55s backwards; }
   @keyframes pop{ 0%{transform:scale(0) rotate(-40deg);opacity:0} 70%{transform:scale(1.3)} 100%{transform:scale(1)} }
-  .stat{ color:#a9bce0; font-size:.95rem; margin:6px 0 18px; }
-  .cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:10px; margin-top:16px; }
+  .stat{ color:#a9bce0; font-size:1rem; margin:6px 0 18px; }
+  .cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:10px; margin-top:16px; }
   .card{
     background:rgba(255,255,255,.05); border:1px solid rgba(140,180,255,.18); border-radius:12px;
-    padding:10px 6px 9px; cursor:pointer; display:flex; flex-direction:column; gap:4px; align-items:center;
+    padding:11px 6px 10px; cursor:pointer; display:flex; flex-direction:column; gap:4px; align-items:center;
     color:#dbe7ff; font-family:inherit;
   }
   .card:hover{ background:rgba(255,255,255,.11); }
   .card.cur{ border-color:#7fe8ff; box-shadow:0 0 0 2px rgba(127,232,255,.25); }
   .card.locked{ opacity:.42; cursor:default; }
-  .cnum{ font-weight:800; font-size:1.1rem; color:#7fe8ff; }
-  .cname{ font-size:.7rem; color:#a9bce0; white-space:nowrap; overflow:hidden; max-width:100%; text-overflow:ellipsis; }
-  .cstars{ font-size:.72rem; color:#ffd76a; letter-spacing:1px; }
+  .cnum{ font-weight:800; font-size:1.2rem; color:#7fe8ff; }
+  .cname{ font-size:.8rem; color:#a9bce0; white-space:nowrap; overflow:hidden; max-width:100%; text-overflow:ellipsis; }
+  .cstars{ font-size:.8rem; color:#ffd76a; letter-spacing:1px; }
+  .ta{
+    width:100%; min-height:6.5rem; margin:12px 0; background:#0a1122; color:#bfe9ff;
+    border:1px solid rgba(140,180,255,.25); border-radius:12px; padding:10px; font-size:.85rem;
+    font-family:ui-monospace,Menlo,Consolas,monospace; resize:vertical;
+  }
   #edbar{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }
   .edrow{ display:flex; gap:6px; flex-wrap:wrap; justify-content:center; }
   .chip{
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); color:#cfe6ff;
-    border-radius:999px; padding:7px 12px; font-size:.8rem; cursor:pointer; font-family:inherit;
+    border-radius:999px; padding:9px 14px; font-size:.92rem; cursor:pointer; font-family:inherit;
   }
   .chip:hover{ background:rgba(255,255,255,.12); }
   .chip.active{ border-color:#7fe8ff; background:rgba(127,232,255,.16); color:#eaffff; box-shadow:0 0 10px rgba(127,232,255,.3); }
-  #edMsg{ text-align:center; font-size:.82rem; color:#8fa3c8; min-height:1.1rem; }
+  #edMsg{ text-align:center; font-size:.92rem; color:#8fa3c8; min-height:1.2rem; }
   @media (max-width:640px){
+    html{ font-size:18px; }
     header h1{ letter-spacing:.2em; padding-left:.2em; }
     #app{ padding:6px 8px 20px; }
-    .iconbtn{ width:2.5rem; height:2.5rem; font-size:1.15rem; }
-    #lvlname{ font-size:1.1rem; }
-    #moves{ font-size:.9rem; }
-    #hint{ font-size:.95rem; }
-    .panel{ padding:1.1rem 1rem; }
-    .mbtn{ font-size:1rem; }
-    .mbtn span{ font-size:.75rem; }
-    .rules li{ font-size:.88rem; }
-    .chip{ font-size:.88rem; padding:8px 13px; }
+    .iconbtn{ width:2.7rem; height:2.7rem; font-size:1.25rem; }
+    #lvlname{ font-size:1.25rem; }
+    #lvlnum{ font-size:.82rem; }
+    #moves{ font-size:1rem; }
+    #hint{ font-size:1.02rem; }
+    .panel{ padding:1.2rem 1rem; }
+    .mbtn{ font-size:1.1rem; }
+    .mbtn span{ font-size:.82rem; }
+    .rules li{ font-size:.98rem; }
+    .chip{ font-size:.98rem; padding:10px 15px; }
+    .stat{ font-size:1.05rem; }
+    .btn{ font-size:1.1rem; }
+    #edMsg{ font-size:.98rem; }
+    .cstars{ font-size:.85rem; }
+    .cname{ font-size:.85rem; }
   }
 </style>
 </head>
@@ -153,11 +163,11 @@
 <div id="app">
   <header>
     <h1>✦ LICHTPFAD ✦</h1>
-    <p>Das Licht-Rätsel · 16 Level · Editor · Tagesrätsel</p>
+    <p>Das Licht-Rätsel · 18 Level · Editor · Codes · Tagesrätsel</p>
   </header>
   <div id="topbar">
     <div id="lvlinfo">
-      <span id="lvlnum">Level 1/16</span>
+      <span id="lvlnum">Level 1/18</span>
       <span id="lvlname">–</span>
     </div>
     <div id="tb-right">
@@ -173,7 +183,6 @@
   </div>
   <div id="stage">
     <canvas id="cv"></canvas>
-    <div id="overlay"></div>
   </div>
   <p id="hint"></p>
   <div id="edbar" class="hidden">
@@ -183,11 +192,13 @@
       <button class="chip" id="edCheck">🧪 Lösbar?</button>
       <button class="chip" id="edTest">▶ Testen</button>
       <button class="chip" id="edSave">💾 Speichern</button>
+      <button class="chip" id="edShare">📤 Code</button>
       <button class="chip" id="edClear">🗑 Leer</button>
       <button class="chip" id="edExit">← Fertig</button>
     </div>
     <div id="edMsg"></div>
   </div>
+  <div id="overlay"></div>
 </div>
 
 <script>
@@ -198,6 +209,7 @@ const DIRS=[{x:0,y:-1},{x:1,y:0},{x:0,y:1},{x:-1,y:0}];
 function refl(d,o){ return o===0 ? [1,0,3,2][d] : [3,2,1,0][d]; }
 function angOf(o){ return o ? Math.PI/4 : -Math.PI/4; }
 function getRots(level){ return [].concat(level.mirrors||[],level.splitters||[],level.prism||[]); }
+function vib(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
 // Farben: 0=weiß 1=rot 2=grün 3=blau 4=gelb(Mix: rot+grün)
 const BEAMRGB =[[120,228,255],[255,99,120],[92,232,146],[132,146,255],[255,220,90]];
@@ -262,14 +274,24 @@ const LEVELS=[
   w:8,h:6, emitter:{x:0,y:2,d:1},
   mirrors:[{x:6,y:2,o:0},{x:6,y:4,o:0}], gates:[{x:3,y:2,d:1},{x:5,y:4,d:1}],
   blocks:[{x:4,y:1}], targets:[{x:7,y:4}]},
- {name:"Mischmasch", hint:"Neu: Der gelbe Misch-Kristall 🟡 leuchtet nur bei ROT + GRÜN gleichzeitig!",
+ {name:"Mischmasch", hint:"Der gelbe Misch-Kristall 🟡 leuchtet nur bei ROT + GRÜN gleichzeitig!",
   w:9,h:7, emitter:{x:0,y:3,d:1},
   prism:[{x:3,y:3,o:0}], mirrors:[{x:3,y:0,o:1},{x:7,y:0,o:0},{x:3,y:6,o:0}],
   targets:[{x:7,y:3,c:4},{x:8,y:6,c:0}]},
- {name:"Der Schieber", hint:"Finale: Bewegliche Spiegel 🪞⇄ kannst du ZIEHEN (tippen = drehen).",
+ {name:"Der Schieber", hint:"Bewegliche Spiegel 🪞 kannst du ZIEHEN (tippen = drehen).",
   w:9,h:7, emitter:{x:0,y:3,d:1},
   gates:[{x:2,y:3,d:1}], mirrors:[{x:5,y:0,o:0}], movables:[{x:4,y:1,o:1}],
   targets:[{x:7,y:0}]},
+ {name:"Ampelfeuer", hint:"Volles Programm: Prisma, Ventil & Misch-Kristall!",
+  w:9,h:7, emitter:{x:0,y:3,d:1},
+  prism:[{x:2,y:3,o:1}], mirrors:[{x:2,y:0,o:1},{x:6,y:0,o:0},{x:2,y:6,o:0}],
+  splitters:[{x:6,y:3,o:0}], gates:[{x:4,y:3,d:1}], blocks:[{x:8,y:0}],
+  targets:[{x:8,y:3,c:1},{x:8,y:6,c:3},{x:6,y:5,c:4}]},
+ {name:"Meisterwerk", hint:"Alles zusammen: Prisma, Portal & Schieber. Zeig, was du kannst!",
+  w:10,h:7, emitter:{x:0,y:3,d:1},
+  prism:[{x:2,y:3,o:0}], mirrors:[{x:2,y:0,o:1}], movables:[{x:4,y:5,o:0}],
+  portals:[{a:{x:5,y:3},b:{x:8,y:5}}], blocks:[{x:6,y:2},{x:6,y:4}],
+  targets:[{x:9,y:5,c:1},{x:9,y:0,c:2},{x:9,y:6,c:3}]},
 ];
 
 const DAILY=[
@@ -305,7 +327,7 @@ const edbar=document.getElementById('edbar'), paletteEl=document.getElementById(
 
 // ================= State =================
 let cur=null, cell=48, pad=14, dpr=1, viewW=8, viewH=6;
-let hoverObj=null, hoverKey=null, parts=[], rings=[], edTrace=null, drag=null;
+let hoverObj=null, hoverKey=null, parts=[], rings=[], edTrace=null, drag=null, litSet=new Set();
 const state={ screen:'hub', started:false, current:0, maxUnlocked:0,
               stars:new Array(LEVELS.length).fill(0), totalMoves:0,
               dailyBest:0, dailyKey:'', custom:[], customSeq:1 };
@@ -332,7 +354,7 @@ const sHint=()=>beep(1180,0.18,'sine',0.07);
 
 // ================= Audio: BGM =================
 let musicOn=true, mNodes=null, mTimer=null, mStep=0, mNext=0;
-const CHORDS=[[57,60,64],[53,57,60],[52,55,59],[55,59,62]]; // Am F C G
+const CHORDS=[[57,60,64],[53,57,60],[52,55,59],[55,59,62]];
 const BASSR=[45,41,40,43];
 const PENTA=[69,72,74,76,79,81,84];
 function mFreq(m){ return 440*Math.pow(2,(m-69)/12); }
@@ -351,7 +373,7 @@ function startMusic(){
 }
 function mSchedule(){
   if(!mNodes) return;
-  const {a}=mNodes;
+  const a=mNodes.a;
   const spb=60/76/2;
   while(mNext<a.currentTime+0.35){
     mPlayStep(mStep,mNext,spb);
@@ -558,7 +580,8 @@ function startLevel(levelObj, mode, meta){
     name:src.name||'Rätsel', hint:src.hint||''
   };
   cur={ idx:(meta&&meta.idx)||0, token:{}, lvl, mode, meta:meta||{}, src:levelObj,
-        moves:0, won:false, earned:0, litKeys:new Set(), hist:[], hintUntil:0, hintSol:null, flashT:0 };
+        moves:0, won:false, earned:0, litKeys:new Set(), hist:[], hintUntil:0, hintSol:null,
+        flashT:0, t0:performance.now(), timeSec:0 };
   const sol=solve(lvl);
   cur.opt = sol ? sol.dist : null;
   if(sol){
@@ -603,6 +626,7 @@ function retrace(silent){
 }
 function winLevel(){
   cur.won=true; cur.flashT=performance.now();
+  cur.timeSec=(performance.now()-cur.t0)/1000;
   const opt=cur.opt!=null?cur.opt:cur.moves;
   cur.earned = cur.moves<=opt ? 3 : cur.moves<=opt+2 ? 2 : 1;
   if(cur.mode==='campaign'){
@@ -612,7 +636,7 @@ function winLevel(){
   } else if(cur.mode==='daily'){
     state.dailyBest=Math.max(state.dailyBest,cur.earned);
   }
-  sWin();
+  sWin(); vib([30,40,60]);
   cur.lvl.targets.forEach(t=>{ burst(px(t.x),py(t.y),true); rings.push({x:px(t.x),y:py(t.y),r:cell*0.3,life:1}); });
   const tok=cur.token;
   setTimeout(()=>{ if(cur && cur.token===tok && cur.won) showWinOverlay(); },950);
@@ -622,6 +646,7 @@ function winLevel(){
 function fmtDate(d){ return d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'long'}); }
 function getDailyIdx(){ return Math.floor(Date.now()/86400000)%DAILY.length; }
 function totalStars(){ return state.stars.reduce((a,b)=>a+b,0); }
+function fmtTime(s){ return s.toFixed(1).replace('.',',')+' s'; }
 
 function updateHUD(){
   if(!cur) return;
@@ -666,7 +691,7 @@ function showHub(){
         </div>`).join('')
     : '';
   showOverlay(`
-   <div class="panel" style="width:460px">
+   <div class="panel">
      <div class="big brand">✦ LICHTPFAD ✦</div>
      <p class="sub">Licht · Spiegel · Farben · Portale · Prismen · Ventile</p>
      <div class="menu">
@@ -674,6 +699,7 @@ function showHub(){
        <button class="mbtn" id="mDaily">📅 Tagesrätsel <span>${dailySub}</span></button>
        <button class="mbtn" id="mSelect">⊞ Levelwahl <span>${totalStars()}/${LEVELS.length*3} Sterne</span></button>
        <button class="mbtn" id="mEditor">🛠 Level-Editor <span>Baue eigene Rätsel</span></button>
+       <button class="mbtn" id="mImport">📥 Level-Code laden <span>von Freunden</span></button>
      </div>
      ${customHtml}
      <ul class="rules">
@@ -690,6 +716,7 @@ function showHub(){
   document.getElementById('mDaily').addEventListener('click',()=>{ ensureAudio(); hideOverlay(); enterDaily(); });
   document.getElementById('mSelect').addEventListener('click',showSelect);
   document.getElementById('mEditor').addEventListener('click',showEditor);
+  document.getElementById('mImport').addEventListener('click',showImport);
   overlay.querySelectorAll('[data-c]').forEach(el=>el.addEventListener('click',()=>{
     const c=state.custom[+el.dataset.c]; if(c){ hideOverlay(); startLevel(c.level,'custom',{name:c.name}); }
   }));
@@ -709,7 +736,7 @@ function showSelect(){
     </button>`;
   }).join('');
   showOverlay(`
-   <div class="panel wide">
+   <div class="panel">
      <div class="big">Levelwahl</div>
      <p class="sub">Gesamtsterne: ${totalStars()}/${LEVELS.length*3}</p>
      <div class="cards">${cards}</div>
@@ -758,7 +785,7 @@ function showWinOverlay(){
    <div class="panel">
      <div class="big">${head}</div>
      ${starsHtml(cur.earned)}
-     <p class="stat">Züge: ${cur.moves} &nbsp;·&nbsp; Optimum: ${cur.opt!=null?cur.opt:'–'}</p>
+     <p class="stat">Züge: ${cur.moves} &nbsp;·&nbsp; Optimum: ${cur.opt!=null?cur.opt:'–'} &nbsp;·&nbsp; ⏱ ${fmtTime(cur.timeSec)}</p>
      <div class="btnrow">${buttons}</div>
    </div>`);
   const bn=document.getElementById('btnNext');
@@ -790,6 +817,59 @@ function showEndOverlay(){
     hideOverlay(); loadCampaign(0);
   });
   document.getElementById('btnHubC').addEventListener('click',()=>{ hideOverlay(); showHub(); });
+}
+
+// ================= Level-Codes =================
+function encodeLevel(L){
+  try{ return btoa(unescape(encodeURIComponent(JSON.stringify(L)))); }catch(e){ return null; }
+}
+function decodeLevel(code){
+  try{
+    const L=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    if(!L||typeof L.w!=='number'||typeof L.h!=='number'||!L.emitter||!Array.isArray(L.targets)||!L.targets.length) return null;
+    return L;
+  }catch(e){ return null; }
+}
+function showShare(code){
+  showOverlay(`
+   <div class="panel">
+     <div class="big">📤 Level-Code</div>
+     <p class="sub">Zum Teilen kopieren &amp; an Freunde schicken:</p>
+     <textarea id="taCode" class="ta" readonly>${code}</textarea>
+     <div class="btnrow">
+       <button class="btn" id="btnCopy">📋 Kopieren</button>
+       <button class="btn ghost" id="btnShBack">← Zurück</button>
+     </div>
+   </div>`);
+  document.getElementById('btnCopy').addEventListener('click',()=>{
+    const ta=document.getElementById('taCode');
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(ta.value).catch(()=>{}); }
+    else{ ta.select(); try{ document.execCommand('copy'); }catch(e){} }
+    beep(760,0.12,'sine',0.1);
+  });
+  document.getElementById('btnShBack').addEventListener('click',backToEditor);
+}
+function showImport(){
+  showOverlay(`
+   <div class="panel">
+     <div class="big">📥 Level-Code</div>
+     <p class="sub">Code einfügen und loslegen:</p>
+     <textarea id="taIn" class="ta" placeholder="Hier Code einfügen …"></textarea>
+     <p class="sub" id="impMsg" style="color:#ff9daa"></p>
+     <div class="btnrow">
+       <button class="btn" id="btnLoad">🛠 In Editor laden</button>
+       <button class="btn ghost" id="btnImBack">← Zurück</button>
+     </div>
+   </div>`);
+  document.getElementById('btnLoad').addEventListener('click',()=>{
+    const L=decodeLevel(document.getElementById('taIn').value);
+    if(!L){ document.getElementById('impMsg').textContent='⚠ Code ungültig.'; beep(180,0.25,'sawtooth',0.06); return; }
+    levelToEd(L);
+    hideOverlay();
+    showEditor();
+    edSetMsg('Level aus Code geladen!');
+  });
+  document.getElementById('btnImBack').addEventListener('click',showHub);
 }
 
 // ================= Editor =================
@@ -847,6 +927,26 @@ function validateEd(){
   };
   return {ok:true,level,msg:''};
 }
+function levelToEd(L){
+  ed.w=Math.min(12,Math.max(4,L.w|0)); ed.h=Math.min(10,Math.max(4,L.h|0));
+  ed.cells.clear();
+  (L.mirrors||[]).forEach(m=>ed.cells.set(m.x+","+m.y,{t:'mirror',o:m.o||0}));
+  (L.splitters||[]).forEach(s=>ed.cells.set(s.x+","+s.y,{t:'splitter',o:s.o||0}));
+  (L.prism||[]).forEach(p=>ed.cells.set(p.x+","+p.y,{t:'prism',o:p.o||0}));
+  (L.movables||[]).forEach(m=>ed.cells.set(m.x+","+m.y,{t:'movable',o:m.o||0}));
+  (L.filters||[]).forEach(f=>ed.cells.set(f.x+","+f.y,{t:'filter',c:f.c||1}));
+  (L.gates||[]).forEach(g=>ed.cells.set(g.x+","+g.y,{t:'gate',d:g.d!=null?g.d:1}));
+  (L.blocks||[]).forEach(b=>ed.cells.set(b.x+","+b.y,{t:'block'}));
+  (L.targets||[]).forEach(t=>ed.cells.set(t.x+","+t.y,{t:'target',c:t.c||0}));
+  (L.portals||[]).forEach(p=>{
+    ed.cells.set(p.a.x+","+p.a.y,{t:'portal'});
+    ed.cells.set(p.b.x+","+p.b.y,{t:'portal'});
+  });
+  ed.emitter={...L.emitter};
+  const si=SIZES.findIndex(s=>s[0]===ed.w&&s[1]===ed.h);
+  ed.sizeIdx=si>=0?si:2;
+  document.getElementById('edSize').textContent=`📐 ${ed.w}×${ed.h}`;
+}
 function editorClick(gx,gy){
   const key=gx+","+gy;
   const existing=ed.cells.get(key);
@@ -873,8 +973,8 @@ function editorClick(gx,gy){
       else if(t==='target') existing.c=(existing.c+1)%5;
       else if(t==='gate') existing.d=(existing.d+1)%4;
     } else {
-      const fresh = (t==='mirror'||t==='splitter'||t==='prism'||t==='movable')?{t,o:0} :
-                    t==='filter'?{t,c:1} : t==='target'?{t,c:0} : t==='gate'?{t,d:1} : {t};
+      const fresh=(t==='mirror'||t==='splitter'||t==='prism'||t==='movable')?{t,o:0} :
+                  t==='filter'?{t,c:1} : t==='target'?{t,c:0} : t==='gate'?{t,d:1} : {t};
       ed.cells.set(key,fresh);
     }
   }
@@ -894,6 +994,7 @@ function showEditor(){
 }
 function backToEditor(){
   state.screen='editor';
+  hideOverlay();
   edbar.classList.remove('hidden');
   resize();
   updateEditorHUD();
@@ -915,7 +1016,6 @@ document.getElementById('edCheck').addEventListener('click',()=>{
   const v=validateEd();
   if(!v.ok){ edSetMsg('⚠ '+v.msg); return; }
   const sol=solve(v.level);
-  if(sol===null && (v.level.movables||[]).length>2){ edSetMsg('Zu komplex für den Check.'); return; }
   edSetMsg(sol?`✓ Lösbar in ${sol.dist} ${sol.dist===1?'Zug':'Zügen'}!`:'✗ Nicht lösbar – prüfe Aufbau.');
   if(sol) beep(880,0.2,'sine',0.1); else beep(180,0.3,'sawtooth',0.06);
 });
@@ -935,6 +1035,12 @@ document.getElementById('edSave').addEventListener('click',()=>{
   state.customSeq++;
   edSetMsg('💾 Gespeichert! Du findest es im Menü.');
   beep(760,0.15,'sine',0.1);
+});
+document.getElementById('edShare').addEventListener('click',()=>{
+  const v=validateEd();
+  if(!v.ok){ edSetMsg('⚠ '+v.msg); return; }
+  const code=encodeLevel(v.level);
+  if(code) showShare(code);
 });
 document.getElementById('edClear').addEventListener('click',()=>{
   ed.cells.clear(); ed.emitter=null; edUpdate(); edSetMsg('Feld geleert.');
@@ -976,7 +1082,7 @@ function rotateNow(c){
   const v=cur.vis.get(c);
   v.ta=angOf(c.o); v.flash=performance.now();
   cur.moves++;
-  sTick();
+  sTick(); vib(8);
   retrace(false);
   updateHUD();
 }
@@ -1016,7 +1122,7 @@ window.addEventListener('pointermove',e=>{
 window.addEventListener('pointerup',e=>{
   if(!drag) return;
   const d=drag; drag=null;
-  if(cur && cur.won) return;
+  if(!cur || cur.won) return;
   if(!d.active){ rotateNow(d.m); return; }
   const r=cv.getBoundingClientRect();
   const gx=Math.floor((d.px-r.left-pad)/cell), gy=Math.floor((d.py-r.top-pad)/cell);
@@ -1029,7 +1135,7 @@ window.addEventListener('pointerup',e=>{
   d.m.x=gx; d.m.y=gy;
   const v=cur.vis.get(d.m); v.flash=performance.now();
   cur.moves++;
-  sMove();
+  sMove(); vib(15);
   retrace(false);
   updateHUD();
 });
@@ -1124,7 +1230,6 @@ function drawBoard(w,h,t){
   bg.addColorStop(0,'#101c34'); bg.addColorStop(1,'#0a1120');
   ctx.fillStyle=bg; rr(1,1,cw-2,ch-2,15); ctx.fill();
   ctx.strokeStyle='rgba(140,180,255,0.16)'; ctx.lineWidth=1; ctx.stroke();
-  // Nebel-Tint
   const nb=ctx.createRadialGradient(cw*0.25+Math.sin(t*0.0002)*20,ch*0.3,0,cw*0.25,ch*0.3,cw*0.7);
   nb.addColorStop(0,'rgba(90,140,255,0.05)'); nb.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=nb; ctx.fillRect(0,0,cw,ch);
@@ -1134,7 +1239,6 @@ function drawBoard(w,h,t){
   ctx.strokeStyle='rgba(148,180,255,0.07)'; ctx.lineWidth=1;
   for(let i=0;i<=w;i++){ ctx.beginPath(); ctx.moveTo(pad+i*cell,pad); ctx.lineTo(pad+i*cell,pad+h*cell); ctx.stroke(); }
   for(let j=0;j<=h;j++){ ctx.beginPath(); ctx.moveTo(pad,pad+j*cell); ctx.lineTo(pad+w*cell,pad+j*cell); ctx.stroke(); }
-  // Vignette + Eck-Klammern
   const vg=ctx.createRadialGradient(cw/2,ch/2,Math.min(cw,ch)*0.35,cw/2,ch/2,Math.max(cw,ch)*0.78);
   vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.34)');
   ctx.fillStyle=vg; ctx.fillRect(0,0,cw,ch);
@@ -1227,10 +1331,9 @@ function drawGate(g,t){
   ctx.save();
   ctx.translate(cx,cy); ctx.rotate(Math.atan2(d.y,d.x));
   ctx.strokeStyle='rgba(160,255,210,0.9)'; ctx.lineWidth=2; ctx.lineCap='round';
-  const off=(t*0.001)%1;
   for(let i=-1;i<=1;i++){
-    const ox=i*s*0.16+(off-0.5)*s*0.08;
-    ctx.globalAlpha=0.55+0.45*Math.sin(t*0.006+i);
+    const ox=i*s*0.16;
+    ctx.globalAlpha=0.55+0.45*Math.abs(Math.sin(t*0.004+i));
     ctx.beginPath();
     ctx.moveTo(ox-s*0.08,-s*0.16); ctx.lineTo(ox+s*0.08,0); ctx.lineTo(ox-s*0.08,s*0.16);
     ctx.stroke();
@@ -1327,7 +1430,6 @@ function drawGhost(cx,cy,ang){
 }
 function drawTarget(tg,t,trace){
   const key=tg.x+","+tg.y;
-  const s=trace&&trace.hits.get(key);
   const lit=trace ? litSet.has(key) : false;
   const wrong=trace && trace.wrongT.has(key);
   const tc=TCOL[tg.c||0];
@@ -1369,7 +1471,7 @@ function drawTarget(tg,t,trace){
   ctx.moveTo(cx-r,cy); ctx.lineTo(cx+r,cy);
   ctx.strokeStyle=lit?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.14)';
   ctx.lineWidth=1; ctx.stroke();
-  if(!lit && (tg.c===4)){
+  if(!lit && tg.c===4){
     ctx.fillStyle='rgba(255,99,120,0.9)'; ctx.beginPath(); ctx.arc(cx-r*0.45,cy,r*0.14,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='rgba(92,232,146,0.9)'; ctx.beginPath(); ctx.arc(cx+r*0.45,cy,r*0.14,0,Math.PI*2); ctx.fill();
   }
@@ -1386,7 +1488,6 @@ function drawTarget(tg,t,trace){
     ctx.stroke();
   }
 }
-let litSet=new Set();
 function drawGameRotatable(c,kind,t,dt){
   const v=cur.vis.get(c);
   v.a+=(v.ta-v.a)*Math.min(1,dt/70);
@@ -1426,19 +1527,17 @@ function drawGameScene(t,dt){
   cur.lvl.gates.forEach(g=>drawGate(g,t));
   drawEmitter(cur.lvl.emitter,t);
   (cur.lvl.portals||[]).forEach(p=>{ drawPortalCell(p.a.x,p.a.y,t); drawPortalCell(p.b.x,p.b.y,t); });
+  litSet=cur.litKeys;
   cur.lvl.mirrors.forEach(m=>drawGameRotatable(m,'mirror',t,dt));
   cur.lvl.splitters.forEach(s=>drawGameRotatable(s,'splitter',t,dt));
   cur.lvl.prism.forEach(p=>drawGameRotatable(p,'prism',t,dt));
   cur.lvl.movables.forEach(m=>drawGameRotatable(m,'movable',t,dt));
-  litSet=cur.litKeys;
   drawBeams(cur.trace,cur.lvl.emitter,t);
   cur.lvl.targets.forEach(tg=>drawTarget(tg,t,cur.trace));
-  // Drag-Ghost
   if(drag && drag.active){
     const r=cv.getBoundingClientRect();
     const gx=Math.floor((drag.px-r.left-pad)/cell), gy=Math.floor((drag.py-r.top-pad)/cell);
-    const inB=gx>=0&&gy>=0&&gx<viewW&&gy<viewH;
-    if(inB){
+    if(gx>=0&&gy>=0&&gx<viewW&&gy<viewH){
       const occ=occSet();
       const free=!occ.has(gx+","+gy)&&!cur.lvl.movables.some(m=>m!==drag.m&&m.x===gx&&m.y===gy);
       ctx.strokeStyle=free?'rgba(140,255,190,0.7)':'rgba(255,110,120,0.7)';
@@ -1450,7 +1549,6 @@ function drawGameScene(t,dt){
     drawBar(drag.px-r.left,drag.py-r.top,cur.vis.get(drag.m).a,false);
     ctx.restore();
   }
-  // Ringe & Partikel
   rings=rings.filter(rg=>rg.life>0);
   rings.forEach(rg=>{
     rg.r+=cell*0.12; rg.life-=0.03;
@@ -1469,7 +1567,6 @@ function drawGameScene(t,dt){
     ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(0.8,cell*0.045*p.life+0.8),0,Math.PI*2); ctx.fill();
   });
   ctx.globalAlpha=1;
-  // Sieg-Blitz
   if(cur.flashT){
     const age=performance.now()-cur.flashT;
     if(age<450){
@@ -1480,6 +1577,7 @@ function drawGameScene(t,dt){
 }
 function drawEditorScene(t){
   drawBoard(ed.w,ed.h,t);
+  litSet = edTrace ? litTargets(ed.valid.level,edTrace) : new Set();
   const pk=[...ed.cells.entries()].filter(([k,c])=>c.t==='portal');
   if(pk.length===2){
     const a=pk[0][0].split(',').map(Number), b=pk[1][0].split(',').map(Number);
@@ -1502,7 +1600,6 @@ function drawEditorScene(t){
     else if(c.t==='portal') drawPortalCell(xy[0],xy[1],t);
   });
   if(ed.emitter) drawEmitter(ed.emitter,t);
-  litSet=edTrace?litTargets(ed.valid.level,edTrace):new Set();
   drawBeams(edTrace,ed.emitter,t);
   if(hoverKey){
     const xy=hoverKey.split(',').map(Number);
