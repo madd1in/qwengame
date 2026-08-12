@@ -68,7 +68,7 @@
     color:#cfe6ff; width:2.5rem; height:2.5rem; border-radius:12px; cursor:pointer; font-size:1.15rem; line-height:1; padding:0;
   }
   .iconbtn:hover{ background:rgba(255,255,255,.12); }
-  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:190px; }
+  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:210px; }
   .dot{ width:8px; height:8px; border-radius:50%; background:#2a3450; border:1px solid #3b4a72; }
   .dot.done{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 8px rgba(95,224,255,.7); }
   .dot.cur{ border-color:#c9b2ff; box-shadow:0 0 0 3px rgba(201,178,255,.22); }
@@ -189,11 +189,11 @@
 <div id="app">
   <header>
     <h1>✦ LICHTPFAD ✦</h1>
-    <p>Das Licht-Rätsel · 22 Level · Zen · Themes · Editor</p>
+    <p>Das Licht-Rätsel · 24 Level · Blitz · Rotoren · Editor</p>
   </header>
   <div id="topbar">
     <div id="lvlinfo">
-      <span id="lvlnum">Level 1/22</span>
+      <span id="lvlnum">Level 1/24</span>
       <span id="lvlname">–</span>
     </div>
     <div id="tb-right">
@@ -204,6 +204,7 @@
       <button class="iconbtn" id="btnHint"  title="Lösung kurz anzeigen">💡</button>
       <button class="iconbtn" id="btnAuto"  title="Automatisch lösen">🤖</button>
       <button class="iconbtn" id="btnTheme" title="Board-Theme wechseln">🎨</button>
+      <button class="iconbtn" id="btnCb"    title="Farbpalette wechseln">👁</button>
       <button class="iconbtn" id="btnMenu"  title="Menü">⊞</button>
       <button class="iconbtn" id="btnSound" title="Effekte an/aus">🔊</button>
       <button class="iconbtn" id="btnMusic" title="Musik an/aus">🎵</button>
@@ -244,16 +245,21 @@ function angOf(o){ return o ? Math.PI/4 : -Math.PI/4; }
 function getRots(level){ return [].concat(level.mirrors||[],level.splitters||[],level.prism||[]); }
 function vib(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
-// ================= Themes =================
+// ================= Themes & Paletten =================
 var THEMES=[
  {name:'Nebula', bg1:'#101c34', bg2:'#0a1120', aur1:'80,160,255',  aur2:'200,120,255', grid:'148,180,255', edge:'127,232,255'},
  {name:'Sunset', bg1:'#2a1430', bg2:'#120a18', aur1:'255,140,90',  aur2:'255,80,180',  grid:'255,170,140', edge:'255,190,120'},
  {name:'Neo',    bg1:'#0a2018', bg2:'#06120c', aur1:'60,255,170',  aur2:'120,255,80',  grid:'120,255,190', edge:'140,255,200'},
 ];
-
 var BEAMRGB =[[120,228,255],[255,99,120],[92,232,146],[132,146,255],[255,220,90],[255,120,220],[90,230,230]];
 var BEAMCORE=['#eafcff','#ffe3e8','#e2ffe9','#e4e6ff','#fff6d0','#ffe3f6','#e0fbfb'];
 var DOTCOL=['#ffffff','#ff6378','#5ce892','#8492ff','#ffd23e','#ff78dc','#5ae6e6'];
+var CB_BEAMS=[[230,230,230],[230,150,0],[0,158,115],[0,114,178],[240,228,66],[204,121,174],[86,180,233]];
+var CB_CORES=['#ffffff','#ffe0b0','#a0e8d0','#a0c8e8','#f8f0a0','#e8c0d8','#c0d8f0'];
+var CB_DOTS=['#ffffff','#e69f00','#009e73','#0072b2','#f0e442','#cc79a7','#56b4e3'];
+function beamRGB(i){ return state.cb?CB_BEAMS[i]:BEAMRGB[i]; }
+function beamCore(i){ return state.cb?CB_CORES[i]:BEAMCORE[i]; }
+function dotCol(i){ return state.cb?CB_DOTS[i]:DOTCOL[i]; }
 var MIXREQ={4:[1,2],5:[1,3],6:[2,3]};
 var TCOL=[
  {lit1:'#fff3c9',lit2:'#ffb63e',un:'rgba(120,100,165,0.35)',stU:'rgba(178,148,255,0.75)',stL:'#ffe9a8',gl:'255,214,100'},
@@ -353,13 +359,23 @@ var LEVELS=[
   mirrors:[{x:2,y:0,o:1},{x:6,y:0,o:0},{x:2,y:6,o:0},{x:6,y:6,o:1}],
   gates:[{x:5,y:3,d:1}],
   targets:[{x:9,y:3,c:1},{x:6,y:5,c:6}], shards:[{x:6,y:4}]},
- {name:"Omega", hint:"Das letzte Rätsel: Prisma, Portal & Schieber. Werde eins mit dem Licht!",
+ {name:"Omega", hint:"Prisma, Portal & Schieber. Werde eins mit dem Licht!",
   w:10,h:7, emitter:{x:0,y:3,d:1},
   prism:[{x:2,y:3,o:1}],
   mirrors:[{x:2,y:0,o:1}],
   movables:[{x:4,y:1,o:0}],
   portals:[{a:{x:5,y:3},b:{x:5,y:6}}],
   targets:[{x:9,y:6,c:1},{x:9,y:0,c:2},{x:9,y:5,c:3}], shards:[{x:6,y:5}]},
+ {name:"Taktgeber", hint:"Neu: Rotoren ⏱ kippen alle 2 s automatisch – timing ist alles!",
+  w:9,h:7, emitter:{x:0,y:3,d:1},
+  splitters:[{x:2,y:3,o:1}], mirrors:[{x:2,y:0,o:1}],
+  rotors:[{x:5,y:3,o:0},{x:5,y:0,o:0}],
+  targets:[{x:8,y:3},{x:5,y:6}], shards:[{x:5,y:4}]},
+ {name:"Metronom", hint:"Blau im Takt: Der Rotor entscheidet, wann alles leuchtet!",
+  w:9,h:7, emitter:{x:0,y:5,d:1},
+  mirrors:[{x:2,y:5,o:1},{x:2,y:3,o:1}], splitters:[{x:3,y:5,o:0}],
+  rotors:[{x:3,y:3,o:0}], filters:[{x:3,y:4,c:3}],
+  targets:[{x:3,y:6,c:3},{x:8,y:5}], shards:[{x:5,y:5}]},
 ];
 
 var DAILY=[
@@ -403,6 +419,8 @@ var ACH=[
  {id:'sharer',   icon:'📤', name:'Architekt',      desc:'Level-Code erzeugt.'},
  {id:'daily',    icon:'📅', name:'Tageslicht',     desc:'Tagesrätsel gelöst.'},
  {id:'zen',      icon:'🪷', name:'Erleuchtet',     desc:'Level im Zen-Modus gelöst.'},
+ {id:'blitz',    icon:'⏱', name:'Blitzmeister',    desc:'Blitz-Run unter 90 Sekunden.'},
+ {id:'takt',     icon:'🌀', name:'Taktgefühl',     desc:'Ein Rotor-Level gelöst.'},
  {id:'master',   icon:'👑', name:'Lichtmeister',   desc:'40+ Sterne gesammelt.'},
 ];
 var toastTimer=null;
@@ -433,7 +451,8 @@ var elLvlnum=document.getElementById('lvlnum'), elLvlname=document.getElementByI
 var elMoves=document.getElementById('moves'), elHint=document.getElementById('hint'), elDots=document.getElementById('dots');
 var btnUndo=document.getElementById('btnUndo'), btnReset=document.getElementById('btnReset');
 var btnHint=document.getElementById('btnHint'), btnAuto=document.getElementById('btnAuto');
-var btnTheme=document.getElementById('btnTheme'), btnMenu=document.getElementById('btnMenu');
+var btnTheme=document.getElementById('btnTheme'), btnCb=document.getElementById('btnCb');
+var btnMenu=document.getElementById('btnMenu');
 var btnSound=document.getElementById('btnSound'), btnMusic=document.getElementById('btnMusic');
 var edbar=document.getElementById('edbar'), paletteEl=document.getElementById('palette'), edMsgEl=document.getElementById('edMsg');
 
@@ -443,10 +462,11 @@ var hoverObj=null, hoverKey=null, parts=[], rings=[], edTrace=null, drag=null, l
 var downPos=null, downCellObj=null, lastRotKey='', lastRotT=0, lastDragT=0;
 var BSTARS=[];
 (function(){ for(var i=0;i<46;i++) BSTARS.push({x:Math.random(),y:Math.random(),z:0.3+Math.random()*0.7,ph:Math.random()*6.28}); })();
-var state={ screen:'hub', started:false, current:0, maxUnlocked:0, theme:0, zen:false,
+var state={ screen:'hub', started:false, current:0, maxUnlocked:0, theme:0, zen:false, cb:false,
             stars:new Array(LEVELS.length).fill(0), totalMoves:0,
             bestTimes:new Array(LEVELS.length).fill(null),
             wins:0, autos:0, ach:{}, shardMap:{},
+            blitzBest:null, blitzSeq:null, blitzPos:0, blitzT0:0, blitzTimes:[],
             dailyBest:0, dailyKey:'', custom:[], customSeq:1 };
 
 // ================= Audio: Effekte =================
@@ -607,6 +627,7 @@ function traceLevel(level, orient){
   (level.mirrors||[]).forEach(function(m){ put(m.x,m.y,{t:'mirror', o: orient? orient.get(m.x+","+m.y) : m.o}); });
   (level.splitters||[]).forEach(function(s){ put(s.x,s.y,{t:'splitter', o: orient? orient.get(s.x+","+s.y) : s.o}); });
   (level.prism||[]).forEach(function(p){ put(p.x,p.y,{t:'prism', o: orient? orient.get(p.x+","+p.y) : p.o}); });
+  (level.rotors||[]).forEach(function(r){ put(r.x,r.y,{t:'mirror', o: orient? (orient.has(r.x+","+r.y)?orient.get(r.x+","+r.y):r.o) : r.o}); });
   (level.movables||[]).forEach(function(m){ put(m.x,m.y,{t:'mirror', o: orient? (orient.has(m.x+","+m.y)?orient.get(m.x+","+m.y):m.o) : m.o}); });
   (level.filters||[]).forEach(function(f){ put(f.x,f.y,{t:'filter',c:f.c}); });
   (level.gates||[]).forEach(function(g){ put(g.x,g.y,{t:'gate',d:g.d}); });
@@ -691,6 +712,7 @@ function evalWin(level,trace){ return litTargets(level,trace).size===level.targe
 
 // ================= Löser =================
 function solve(level){
+  if((level.rotors||[]).length) return null; // Timing-Level: kein statischer Lösungsweg
   var rots=getRots(level);
   var movs=(level.movables||[]).map(function(m){ return {x:m.x,y:m.y,o:m.o}; });
   if(rots.length+movs.length>14) return null;
@@ -699,6 +721,7 @@ function solve(level){
   (level.targets||[]).forEach(function(t){ occ.add(t.x+","+t.y); });
   (level.filters||[]).forEach(function(f){ occ.add(f.x+","+f.y); });
   (level.gates||[]).forEach(function(g){ occ.add(g.x+","+g.y); });
+  (level.rotors||[]).forEach(function(r){ occ.add(r.x+","+r.y); });
   (level.portals||[]).forEach(function(p){ occ.add(p.a.x+","+p.a.y); occ.add(p.b.x+","+p.b.y); });
   rots.forEach(function(r){ occ.add(r.x+","+r.y); });
   occ.add(level.emitter.x+","+level.emitter.y);
@@ -746,6 +769,7 @@ function startLevel(levelObj, mode, meta){
     mirrors:(src.mirrors||[]).map(function(m){ return {x:m.x,y:m.y,o:m.o}; }),
     splitters:(src.splitters||[]).map(function(s){ return {x:s.x,y:s.y,o:s.o}; }),
     prism:(src.prism||[]).map(function(p){ return {x:p.x,y:p.y,o:p.o}; }),
+    rotors:(src.rotors||[]).map(function(r){ return {x:r.x,y:r.y,b:(r.o!=null?r.o:0),o:(r.o!=null?r.o:0)}; }),
     movables:(src.movables||[]).map(function(m){ return {x:m.x,y:m.y,o:m.o}; }),
     filters:(src.filters||[]).map(function(f){ return {x:f.x,y:f.y,c:f.c}; }),
     gates:(src.gates||[]).map(function(g){ return {x:g.x,y:g.y,d:g.d}; }),
@@ -759,6 +783,7 @@ function startLevel(levelObj, mode, meta){
         moves:0, won:false, earned:0, litKeys:new Set(), shardKeys:new Set(), usedHelp:false,
         hist:[], hintUntil:0, hintSol:null,
         solution:null, autoUsed:false,
+        rotorT0:performance.now(), rotorPhase:-1,
         flashT:0, t0:performance.now(), timeSec:0 };
   var sol=solve(lvl);
   cur.opt = sol ? sol.dist : null;
@@ -769,7 +794,7 @@ function startLevel(levelObj, mode, meta){
     cur.hintSol=map;
   }
   cur.vis=new Map();
-  getRots(lvl).concat(lvl.movables).forEach(function(c){
+  getRots(lvl).concat(lvl.movables,lvl.rotors).forEach(function(c){
     cur.vis.set(c,{a:angOf(c.o), ta:angOf(c.o), flash:0});
   });
   state.screen = (mode==='test') ? 'test' : 'play';
@@ -786,6 +811,16 @@ function enterDaily(){
   var tk=new Date().toDateString();
   if(state.dailyKey!==tk){ state.dailyKey=tk; state.dailyBest=0; }
   startLevel(DAILY[getDailyIdx()],'daily',{});
+}
+function startBlitz(){
+  var idx=[];
+  for(var i=0;i<16;i++) idx.push(i);
+  for(var j=idx.length-1;j>0;j--){ var k=(Math.random()*(j+1))|0; var tmp=idx[j]; idx[j]=idx[k]; idx[k]=tmp; }
+  state.blitzSeq=idx.slice(0,5);
+  state.blitzPos=0;
+  state.blitzT0=performance.now();
+  state.blitzTimes=[];
+  startLevel(LEVELS[state.blitzSeq[0]],'blitz',{});
 }
 function px(gx){ return pad+gx*cell+cell/2; }
 function py(gy){ return pad+gy*cell+cell/2; }
@@ -834,12 +869,16 @@ function winLevel(){
   if(cur.mode==='campaign' && state.zen){
     state.maxUnlocked=Math.min(LEVELS.length-1, Math.max(state.maxUnlocked, cur.idx+1));
   }
+  if(cur.mode==='blitz'){
+    state.blitzTimes.push(cur.timeSec);
+  }
   unlock('first');
   if(state.zen) unlock('zen');
   if(cur.mode==='campaign' && cur.earned===3 && !state.zen) unlock('perfect');
   if(cur.mode==='campaign' && cur.earned===3 && !cur.usedHelp && !state.zen) unlock('pure');
-  if(cur.timeSec<10) unlock('speed');
+  if(cur.timeSec<10 && cur.mode!=='blitz') unlock('speed');
   if(cur.mode==='daily') unlock('daily');
+  if(cur.mode==='campaign' && cur.lvl.rotors.length) unlock('takt');
   if(totalShards()>=5) unlock('collector');
   if(totalStars()>=40) unlock('master');
   sWin(); vib([30,40,60]);
@@ -880,10 +919,15 @@ function updateHUD(){
     elLvlnum.textContent='Tagesrätsel'; elLvlname.textContent=cur.lvl.name; elDots.innerHTML='';
   } else if(cur.mode==='custom'){
     elLvlnum.textContent='Eigenbau'; elLvlname.textContent=cur.lvl.name; elDots.innerHTML='';
+  } else if(cur.mode==='blitz'){
+    elLvlnum.textContent='⏱ Blitz '+(state.blitzPos+1)+'/5'; elLvlname.textContent=cur.lvl.name; elDots.innerHTML='';
   } else {
     elLvlnum.textContent='Testmodus'; elLvlname.textContent='Eigenes Rätsel'; elDots.innerHTML='';
   }
   var mv='Züge: '+cur.moves;
+  if(cur.mode==='blitz'){
+    mv+=' · ⏱ '+fmtTime((performance.now()-state.blitzT0)/1000);
+  }
   if(cur.lvl.shards && cur.lvl.shards.length){
     mv+=' ✦ '+cur.shardKeys.size+'/'+cur.lvl.shards.length;
   }
@@ -892,6 +936,9 @@ function updateHUD(){
   var opt=cur.opt!=null?cur.opt:'–';
   elHint.innerHTML='💡 '+h+' <span class="opt">· Optimum: '+opt+'</span>';
 }
+setInterval(function(){
+  try{ if(cur && cur.mode==='blitz' && !cur.won) updateHUD(); }catch(e){}
+},250);
 function updateEditorHUD(){
   elLvlnum.textContent='EDITOR'; elLvlname.textContent='Eigenes Rätsel';
   elMoves.textContent='—'; elDots.innerHTML='';
@@ -905,6 +952,7 @@ function showHub(){
   var d=new Date();
   var dailySub=fmtDate(d)+(state.dailyKey===d.toDateString()&&state.dailyBest?(' · '+'★'.repeat(state.dailyBest)):'');
   var achCount=0; ACH.forEach(function(a){ if(state.ach[a.id]) achCount++; });
+  var blitzSub=state.blitzBest!=null?('Bestzeit '+fmtTime(state.blitzBest)):'neu';
   var customHtml=state.custom.length
     ? '<div class="csec">Deine Level</div>'+state.custom.map(function(c,i){
         return '<div class="crow">'+
@@ -918,6 +966,7 @@ function showHub(){
      '<p class="sub">📊 '+state.wins+' Siege · '+totalStars()+'/'+(LEVELS.length*3)+' ★ · '+totalShards()+' ✦ · 🏅 '+achCount+'/'+ACH.length+'</p>'+
      '<div class="menu">'+
        '<button class="mbtn" id="mPlay">'+(state.started?'▶ Weiter spielen':'▶ Los geht\u2019s')+' <span>Kampagne · Level '+(state.current+1)+'/'+LEVELS.length+'</span></button>'+
+       '<button class="mbtn" id="mBlitz">⏱ Blitz-Modus <span>'+blitzSub+'</span></button>'+
        '<button class="mbtn" id="mDaily">📅 Tagesrätsel <span>'+dailySub+'</span></button>'+
        '<button class="mbtn" id="mSelect">⊞ Levelwahl <span>'+totalStars()+'/'+(LEVELS.length*3)+' Sterne</span></button>'+
        '<button class="mbtn" id="mZen">🧘 Zen-Modus <span>'+(state.zen?'AN – alles frei':'AUS')+'</span></button>'+
@@ -928,8 +977,8 @@ function showHub(){
      customHtml+
      '<ul class="rules">'+
        '<li>🪞 Tipp = kippen · 🪞 Ziehen = verschieben · ✦ Splitter aufsammeln</li>'+
-       '<li>🎨 Filter ·  Portale ·  Ventile · 🩷🩵 Mix = zwei Farben gleichzeitig</li>'+
-       '<li>🎨 Theme & 🧘 Zen oben/im Menü · 🤖 löst notfalls jedes Level.</li>'+
+       '<li>⏱ Rotoren kippen im Takt · 🎨 Filter ·  Portale ·  Ventile · 🩷🩵 Mix</li>'+
+       '<li>🎨 Theme · 👁 Farbpalette · 🧘 Zen ·  löst notfalls jedes Level.</li>'+
      '</ul>'+
    '</div>');
   document.getElementById('mPlay').addEventListener('click',function(){
@@ -938,6 +987,7 @@ function showHub(){
     else loadCampaign(state.current);
     beep(660,0.15,'sine',0.1);
   });
+  document.getElementById('mBlitz').addEventListener('click',function(){ ensureAudio(); hideOverlay(); startBlitz(); });
   document.getElementById('mDaily').addEventListener('click',function(){ ensureAudio(); hideOverlay(); enterDaily(); });
   document.getElementById('mSelect').addEventListener('click',showSelect);
   document.getElementById('mAch').addEventListener('click',showAch);
@@ -969,7 +1019,7 @@ function showAch(){
   showOverlay(
    '<div class="panel">'+
      '<div class="big">🏅 Erfolge</div>'+
-     '<p class="sub">'+totalShards()+' ✦ gesammelt · '+state.wins+' Siege · Theme: '+THEMES[state.theme].name+'</p>'+
+     '<p class="sub">'+totalShards()+' ✦ · '+state.wins+' Siege · ⏱ '+(state.blitzBest!=null?fmtTime(state.blitzBest):'–')+'</p>'+
      '<div style="margin-top:12px">'+rows+'</div>'+
      '<div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="btnAchBack">← Zurück</button></div>'+
    '</div>');
@@ -1027,6 +1077,9 @@ function showWinOverlay(){
     head='🎉 Eigenbau geschafft!';
     buttons='<button class="btn" id="btnAgain">↻ Nochmal</button>'+
              '<button class="btn ghost" id="btnToHub">⊞ Menü</button>';
+  } else if(m==='blitz'){
+    head='⏱ Blitz '+(state.blitzPos+1)+'/5 geschafft!';
+    buttons='<button class="btn" id="btnNext">Weiter →</button>';
   } else {
     head='✅ Test erfolgreich!';
     buttons='<button class="btn" id="btnToEd">🛠 Zurück zum Editor</button>'+
@@ -1045,6 +1098,15 @@ function showWinOverlay(){
   var bn=document.getElementById('btnNext');
   if(bn) bn.addEventListener('click',function(){
     hideOverlay();
+    if(m==='blitz'){
+      state.blitzPos++;
+      if(state.blitzPos<5){
+        startLevel(LEVELS[state.blitzSeq[state.blitzPos]],'blitz',{});
+      } else {
+        showBlitzEnd();
+      }
+      return;
+    }
     if(cur.idx===LEVELS.length-1) showEndOverlay(); else loadCampaign(cur.idx+1);
   });
   var ba=document.getElementById('btnAgain');
@@ -1053,6 +1115,28 @@ function showWinOverlay(){
   if(bh) bh.addEventListener('click',function(){ hideOverlay(); showHub(); });
   var be=document.getElementById('btnToEd');
   if(be) be.addEventListener('click',function(){ hideOverlay(); backToEditor(); });
+}
+function showBlitzEnd(){
+  state.screen='end';
+  var total=state.blitzTimes.reduce(function(a,b){ return a+b; },0);
+  var rec=false;
+  if(state.blitzBest==null||total<state.blitzBest){ state.blitzBest=total; rec=true; }
+  if(total<90) unlock('blitz');
+  var rows=state.blitzTimes.map(function(t,i){
+    return '<div class="achrow on"><span class="aic">'+(i+1)+'</span><span class="atx"><b>'+LEVELS[state.blitzSeq[i]].name+'</b></span><span class="ast">'+fmtTime(t)+'</span></div>';
+  }).join('');
+  showOverlay(
+   '<div class="panel">'+
+     '<div class="big">⏱ Blitz-Run fertig!</div>'+
+     '<p class="stat">Gesamt: '+fmtTime(total)+(rec?' · 🎉 Neue Bestzeit!':'')+'</p>'+
+     '<div>'+rows+'</div>'+
+     '<div class="btnrow" style="margin-top:14px">'+
+       '<button class="btn" id="btnBlitzAgain">⏱ Nochmal</button>'+
+       '<button class="btn ghost" id="btnHubB">⊞ Menü</button>'+
+     '</div>'+
+   '</div>');
+  document.getElementById('btnBlitzAgain').addEventListener('click',function(){ hideOverlay(); startBlitz(); });
+  document.getElementById('btnHubB').addEventListener('click',function(){ hideOverlay(); showHub(); });
 }
 function showEndOverlay(){
   state.screen='end';
@@ -1133,6 +1217,7 @@ var TOOLS=[
  {id:'emitter', label:'🔦 Strahler'},
  {id:'mirror',  label:'🪞 Spiegel'},
  {id:'movable', label:'🪞⇄ Beweglich'},
+ {id:'rotor',   label:'⏱ Rotor'},
  {id:'splitter',label:'🔮 Teiler'},
  {id:'prism',   label:'💠 Prisma'},
  {id:'filter',  label:'🎨 Filter'},
@@ -1162,7 +1247,7 @@ function edUpdate(){
 }
 function validateEd(){
   if(!ed.emitter) return {ok:false,msg:'Setze einen Strahler 🔦.'};
-  var arr={mirror:[],splitter:[],prism:[],movable:[],filter:[],target:[],block:[],portal:[],gate:[],shard:[]};
+  var arr={mirror:[],splitter:[],prism:[],movable:[],rotor:[],filter:[],target:[],block:[],portal:[],gate:[],shard:[]};
   ed.cells.forEach(function(c,k){
     var xy=k.split(',').map(Number);
     arr[c.t].push({x:xy[0],y:xy[1],o:c.o,c:c.c,d:c.d});
@@ -1175,6 +1260,7 @@ function validateEd(){
     mirrors:arr.mirror.map(function(p){ return {x:p.x,y:p.y,o:p.o||0}; }),
     splitters:arr.splitter.map(function(p){ return {x:p.x,y:p.y,o:p.o||0}; }),
     prism:arr.prism.map(function(p){ return {x:p.x,y:p.y,o:p.o||0}; }),
+    rotors:arr.rotor.map(function(p){ return {x:p.x,y:p.y,o:p.o||0}; }),
     movables:arr.movable.map(function(p){ return {x:p.x,y:p.y,o:p.o||0}; }),
     filters:arr.filter.map(function(p){ return {x:p.x,y:p.y,c:p.c||1}; }),
     gates:arr.gate.map(function(p){ return {x:p.x,y:p.y,d:(p.d!=null?p.d:1)}; }),
@@ -1192,6 +1278,7 @@ function levelToEd(L){
   (L.mirrors||[]).forEach(function(m){ ed.cells.set(m.x+","+m.y,{t:'mirror',o:m.o||0}); });
   (L.splitters||[]).forEach(function(s){ ed.cells.set(s.x+","+s.y,{t:'splitter',o:s.o||0}); });
   (L.prism||[]).forEach(function(p){ ed.cells.set(p.x+","+p.y,{t:'prism',o:p.o||0}); });
+  (L.rotors||[]).forEach(function(r){ ed.cells.set(r.x+","+r.y,{t:'rotor',o:r.o||0}); });
   (L.movables||[]).forEach(function(m){ ed.cells.set(m.x+","+m.y,{t:'movable',o:m.o||0}); });
   (L.filters||[]).forEach(function(f){ ed.cells.set(f.x+","+f.y,{t:'filter',c:f.c||1}); });
   (L.gates||[]).forEach(function(g){ ed.cells.set(g.x+","+g.y,{t:'gate',d:(g.d!=null?g.d:1)}); });
@@ -1229,13 +1316,13 @@ function editorClick(gx,gy){
   } else {
     if(isEm){ edSetMsg('Auf dem Strahler ist kein Platz – erst radieren.'); edUpdate(); return; }
     if(existing && existing.t===t){
-      if(t==='mirror'||t==='splitter'||t==='prism'||t==='movable') existing.o^=1;
+      if(t==='mirror'||t==='splitter'||t==='prism'||t==='movable'||t==='rotor') existing.o^=1;
       else if(t==='filter') existing.c=(existing.c%3)+1;
       else if(t==='target') existing.c=(existing.c+1)%7;
       else if(t==='gate') existing.d=(existing.d+1)%4;
     } else {
       var fresh;
-      if(t==='mirror'||t==='splitter'||t==='prism'||t==='movable') fresh={t:t,o:0};
+      if(t==='mirror'||t==='splitter'||t==='prism'||t==='movable'||t==='rotor') fresh={t:t,o:0};
       else if(t==='filter') fresh={t:t,c:1};
       else if(t==='target') fresh={t:t,c:0};
       else if(t==='gate') fresh={t:t,d:1};
@@ -1280,6 +1367,7 @@ document.getElementById('edSize').addEventListener('click',function(){
 document.getElementById('edCheck').addEventListener('click',function(){
   var v=validateEd();
   if(!v.ok){ edSetMsg('⚠ '+v.msg); return; }
+  if((v.level.rotors||[]).length){ edSetMsg('⏱ Timing-Level – Check nicht verfügbar (Rotor).'); return; }
   var sol=solve(v.level);
   edSetMsg(sol?('✓ Lösbar in '+sol.dist+' '+(sol.dist===1?'Zug':'Zügen')+'!'):'✗ Nicht lösbar – prüfe Aufbau.');
   if(sol) beep(880,0.2,'sine',0.1); else beep(180,0.3,'sawtooth',0.06);
@@ -1338,6 +1426,7 @@ function occSet(){
   L.targets.forEach(function(t){ s.add(t.x+","+t.y); });
   L.filters.forEach(function(f){ s.add(f.x+","+f.y); });
   L.gates.forEach(function(g){ s.add(g.x+","+g.y); });
+  L.rotors.forEach(function(r){ s.add(r.x+","+r.y); });
   L.portals.forEach(function(p){ s.add(p.a.x+","+p.a.y); s.add(p.b.x+","+p.b.y); });
   getRots(L).forEach(function(r){ s.add(r.x+","+r.y); });
   s.add(L.emitter.x+","+L.emitter.y);
@@ -1453,7 +1542,7 @@ btnReset.addEventListener('click',function(){
 });
 btnHint.addEventListener('click',function(){
   if(!cur||cur.won||(state.screen!=='play'&&state.screen!=='test')) return;
-  if(!cur.hintSol){ showToast('⚠ Kein Lösungsweg für dieses Level gefunden.'); beep(180,0.2,'sawtooth',0.06); return; }
+  if(!cur.hintSol){ showToast('⚠ Kein Lösungsweg (Timing-Level oder unlösbar).'); beep(180,0.2,'sawtooth',0.06); return; }
   cur.usedHelp=true;
   cur.hintUntil=performance.now()+2800;
   sHint();
@@ -1489,13 +1578,18 @@ btnTheme.addEventListener('click',function(){
   showToast('🎨 Theme: '+THEMES[state.theme].name);
   beep(560,0.1,'sine',0.09);
 });
+btnCb.addEventListener('click',function(){
+  state.cb=!state.cb;
+  showToast('👁 Palette: '+(state.cb?'Colorblind-freundlich':'Klassisch'));
+  beep(600,0.1,'sine',0.09);
+});
 btnMenu.addEventListener('click',function(){
   if(state.screen==='test'){ hideOverlay(); backToEditor(); return; }
   if(state.screen==='editor'){ edbar.classList.add('hidden'); showHub(); return; }
   if(state.screen==='play'||state.screen==='select'||state.screen==='end') showHub();
 });
 btnSound.addEventListener('click',function(){
-  soundOn=!soundOn; btnSound.textContent=soundOn?'🔊':'🔇';
+  soundOn=!soundOn; btnSound.textContent=soundOn?'🔊':'';
   if(soundOn){ ensureAudio(); beep(660,0.12,'sine',0.1); }
 });
 btnMusic.addEventListener('click',function(){
@@ -1630,12 +1724,12 @@ function drawBeams(trace,emitter,t){
   trace.beams.forEach(function(bm){
     var pts=bm.pts; if(pts.length<2) return;
     var P=pts.map(function(p){ return {x:px(p.x),y:py(p.y)}; });
-    var rgb=BEAMRGB[bm.col];
+    var rgb=beamRGB(bm.col);
     ctx.strokeStyle='rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.10)'; ctx.lineWidth=cell*0.32; poly(P); ctx.stroke();
     ctx.strokeStyle='rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.30)'; ctx.lineWidth=cell*0.16; poly(P); ctx.stroke();
     ctx.save();
     ctx.shadowColor='rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.9)'; ctx.shadowBlur=cell*0.22;
-    ctx.strokeStyle=BEAMCORE[bm.col]; ctx.lineWidth=Math.max(2,cell*0.06); poly(P); ctx.stroke();
+    ctx.strokeStyle=beamCore(bm.col); ctx.lineWidth=Math.max(2,cell*0.06); poly(P); ctx.stroke();
     ctx.restore();
     ctx.save();
     ctx.strokeStyle='rgba(255,255,255,0.85)';
@@ -1689,7 +1783,7 @@ function drawBlock(b){
   });
 }
 function drawFilter(f){
-  var cx=px(f.x), cy=py(f.y), s=cell, rgb=BEAMRGB[f.c];
+  var cx=px(f.x), cy=py(f.y), s=cell, rgb=beamRGB(f.c);
   ctx.fillStyle='rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.20)';
   rr(cx-s*0.38,cy-s*0.38,s*0.76,s*0.76,s*0.14); ctx.fill();
   ctx.strokeStyle='rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+',0.85)'; ctx.lineWidth=2; ctx.stroke();
@@ -1801,6 +1895,16 @@ function drawMovableMarks(cx,cy){
   });
   ctx.restore();
 }
+function drawRotorMarks(cx,cy,t){
+  var prog=((performance.now()-(cur?cur.rotorT0:0))%2000)/2000;
+  ctx.save();
+  ctx.strokeStyle='rgba(255,200,100,0.5)'; ctx.lineWidth=1.5; ctx.setLineDash([3,5]);
+  ctx.beginPath(); ctx.arc(cx,cy,cell*0.40,0,Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(255,200,100,0.9)'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.arc(cx,cy,cell*0.40,-Math.PI/2,-Math.PI/2+prog*Math.PI*2); ctx.stroke();
+  ctx.restore();
+}
 function drawPrism(cx,cy,ang){
   ctx.fillStyle='rgba(255,255,255,0.035)';
   ctx.beginPath(); ctx.arc(cx,cy,cell*0.35,0,Math.PI*2); ctx.fill();
@@ -1814,7 +1918,7 @@ function drawPrism(cx,cy,ang){
   ctx.closePath();
   ctx.fillStyle='rgba(255,255,255,0.09)'; ctx.fill();
   ctx.strokeStyle='rgba(235,246,255,0.9)'; ctx.lineWidth=2; ctx.stroke();
-  var cols=['#ff8fa0','#8ff0b4','#a8b0ff'];
+  var cols=[dotCol(1),dotCol(2),dotCol(3)];
   V.forEach(function(v,i){
     ctx.fillStyle=cols[i];
     ctx.beginPath(); ctx.arc(v[0],v[1],cell*0.05,0,Math.PI*2); ctx.fill();
@@ -1889,8 +1993,8 @@ function drawTarget(tg,t,trace){
   ctx.lineWidth=1; ctx.stroke();
   if(!lit && MIXREQ[tg.c]){
     var req=MIXREQ[tg.c];
-    ctx.fillStyle=DOTCOL[req[0]]; ctx.beginPath(); ctx.arc(cx-r*0.45,cy,r*0.14,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=DOTCOL[req[1]]; ctx.beginPath(); ctx.arc(cx+r*0.45,cy,r*0.14,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=dotCol(req[0]); ctx.beginPath(); ctx.arc(cx-r*0.45,cy,r*0.14,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=dotCol(req[1]); ctx.beginPath(); ctx.arc(cx+r*0.45,cy,r*0.14,0,Math.PI*2); ctx.fill();
   }
   if(lit){
     ctx.fillStyle='rgba(255,255,255,0.8)';
@@ -1911,6 +2015,7 @@ function drawGameRotatable(c,kind,t,dt){
   var cx=px(c.x), cy=py(c.y);
   var a=v?v.a:angOf(c.o);
   if(kind==='movable') drawMovableMarks(cx,cy);
+  if(kind==='rotor') drawRotorMarks(cx,cy,t);
   if(kind==='prism') drawPrism(cx,cy,a); else drawBar(cx,cy,a,kind==='splitter',t);
   if(cur.hintUntil>t && cur.hintSol){
     var so=cur.hintSol.get(c.x+","+c.y);
@@ -1930,7 +2035,7 @@ function drawGameRotatable(c,kind,t,dt){
     rr(cx-cell*0.46,cy-cell*0.46,cell*0.92,cell*0.92,cell*0.14); ctx.stroke();
   }
 }
-function drawPortalLinks(portals,t,usedSet){
+function drawPortalLinks(portals,t){
   (portals||[]).forEach(function(p){
     ctx.save();
     ctx.strokeStyle='rgba(200,150,255,0.20)'; ctx.lineWidth=1.5;
@@ -1941,7 +2046,7 @@ function drawPortalLinks(portals,t,usedSet){
 }
 function drawGameScene(t,dt){
   drawBoard(cur.lvl.w,cur.lvl.h,t);
-  drawPortalLinks(cur.lvl.portals,t,cur.trace?cur.trace.portals:null);
+  drawPortalLinks(cur.lvl.portals,t);
   cur.lvl.blocks.forEach(drawBlock);
   cur.lvl.filters.forEach(drawFilter);
   cur.lvl.gates.forEach(function(g){ drawGate(g,t); });
@@ -1956,6 +2061,7 @@ function drawGameScene(t,dt){
   cur.lvl.mirrors.forEach(function(m){ drawGameRotatable(m,'mirror',t,dt); });
   cur.lvl.splitters.forEach(function(s){ drawGameRotatable(s,'splitter',t,dt); });
   cur.lvl.prism.forEach(function(p){ drawGameRotatable(p,'prism',t,dt); });
+  cur.lvl.rotors.forEach(function(r){ drawGameRotatable(r,'rotor',t,dt); });
   cur.lvl.movables.forEach(function(m){ drawGameRotatable(m,'movable',t,dt); });
   drawBeams(cur.trace,cur.lvl.emitter,t);
   cur.lvl.targets.forEach(function(tg){ drawTarget(tg,t,cur.trace); });
@@ -2032,6 +2138,7 @@ function drawEditorScene(t){
     if(c.t==='mirror') drawBar(cx,cy,angOf(c.o||0),false,t);
     else if(c.t==='splitter') drawBar(cx,cy,angOf(c.o||0),true,t);
     else if(c.t==='movable'){ drawMovableMarks(cx,cy); drawBar(cx,cy,angOf(c.o||0),false,t); }
+    else if(c.t==='rotor'){ drawRotorMarks(cx,cy,t); drawBar(cx,cy,angOf(c.o||0),false,t); }
     else if(c.t==='prism') drawPrism(cx,cy,angOf(c.o||0));
     else if(c.t==='block') drawBlock({x:xy[0],y:xy[1]});
     else if(c.t==='filter') drawFilter({x:xy[0],y:xy[1],c:c.c});
@@ -2061,6 +2168,19 @@ function render(t){
     ctx.clearRect(-20,-20,cv.width/dpr+40,cv.height/dpr+40);
     if(state.screen==='editor'){ drawEditorScene(t); return; }
     if(!cur) return;
+    // Rotor-Takt: alle 2 s kippen
+    if((state.screen==='play'||state.screen==='test') && !cur.won && cur.lvl.rotors.length){
+      var ph=Math.floor((performance.now()-cur.rotorT0)/2000)%2;
+      if(ph!==cur.rotorPhase){
+        cur.rotorPhase=ph;
+        cur.lvl.rotors.forEach(function(r){
+          r.o=r.b^ph;
+          var v=cur.vis.get(r);
+          if(v){ v.ta=angOf(r.o); v.flash=performance.now(); }
+        });
+        retrace(false);
+      }
+    }
     drawGameScene(t,dt);
   }catch(err){ /* Render-Failsafe */ }
 }
