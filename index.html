@@ -32,6 +32,7 @@
     animation:twk 7s ease-in-out infinite alternate;
   }
   @keyframes twk{ from{opacity:.45} to{opacity:.9} }
+  @keyframes slide{ to{ background-position:200% 0; } }
   body::after{
     content:''; position:fixed; top:0; left:-10%; width:2px; height:2px; z-index:0;
     background:rgba(255,255,255,.9); border-radius:50%; pointer-events:none;
@@ -52,9 +53,11 @@
   header{ text-align:center; padding:4px 0 2px; }
   header h1{
     margin:0; font-size:clamp(1.5rem,5.5vw,2.2rem); font-weight:800; letter-spacing:.34em; padding-left:.34em;
-    background:linear-gradient(90deg,#7fe8ff,#c9b2ff 55%,#ffd76a);
+    background:linear-gradient(90deg,#7fe8ff,#c9b2ff 55%,#ffd76a,#7fe8ff);
+    background-size:200% 100%;
     -webkit-background-clip:text; background-clip:text; color:transparent;
     filter:drop-shadow(0 0 14px rgba(127,232,255,.35));
+    animation:slide 6s linear infinite;
   }
   header p{ margin:2px 0 0; color:#7f93b8; font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; }
   #topbar{
@@ -74,7 +77,7 @@
   }
   .iconbtn:hover{ background:rgba(255,255,255,.12); }
   .iconbtn:active{ transform:scale(.9); }
-  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:210px; }
+  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:230px; }
   .dot{ width:8px; height:8px; border-radius:50%; background:#2a3450; border:1px solid #3b4a72; }
   .dot.done{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 8px rgba(95,224,255,.7); }
   .dot.cur{ border-color:#c9b2ff; box-shadow:0 0 0 3px rgba(201,178,255,.22); }
@@ -206,6 +209,7 @@
   @media (prefers-reduced-motion: reduce){
     body::before,body::after{ animation:none; }
     .panel{ animation:none; }
+    header h1{ animation:none; }
   }
 </style>
 </head>
@@ -217,7 +221,7 @@
   </header>
   <div id="topbar">
     <div id="lvlinfo">
-      <span id="lvlnum">Level 1/24</span>
+      <span id="lvlnum">Level 1/26</span>
       <span id="lvlname">–</span>
     </div>
     <div id="tb-right">
@@ -247,6 +251,7 @@
       <button class="chip" id="edTest">▶ Testen</button>
       <button class="chip" id="edSave">💾 Speichern</button>
       <button class="chip" id="edShare">📤 Code</button>
+      <button class="chip" id="edLink">🔗 Link</button>
       <button class="chip" id="edClear">🗑 Leer</button>
       <button class="chip" id="edExit">← Fertig</button>
     </div>
@@ -423,6 +428,18 @@ var LEVELS=[
   mirrors:[{x:2,y:5,o:1},{x:2,y:3,o:1}], splitters:[{x:3,y:5,o:0}],
   rotors:[{x:3,y:3,o:0}], filters:[{x:3,y:4,c:3}],
   targets:[{x:3,y:6,c:3},{x:8,y:5}], shards:[{x:5,y:5}]},
+ {name:"Kreuzfeuer II", hint:"Gelb 🟡 = Rot + Grün. Zwei Wege, ein Kristall.",
+  w:10,h:7, emitter:{x:0,y:3,d:1},
+  splitters:[{x:3,y:3,o:1},{x:5,y:3,o:0}],
+  mirrors:[{x:3,y:0,o:1},{x:8,y:0,o:0},{x:5,y:5,o:0},{x:8,y:5,o:1}],
+  gates:[{x:6,y:3,d:1}], filters:[{x:7,y:3,c:1}],
+  targets:[{x:9,y:3,c:1},{x:8,y:4,c:4}], shards:[{x:8,y:2}]},
+ {name:"Sternentor", hint:"Rotoren im Gleichklang: Nur im richtigen Takt mischt sich das Licht!",
+  w:10,h:7, emitter:{x:0,y:3,d:1},
+  prism:[{x:2,y:3,o:1}],
+  rotors:[{x:5,y:3,o:0},{x:8,y:0,o:0}],
+  mirrors:[{x:2,y:0,o:1},{x:5,y:6,o:0},{x:8,y:5,o:0},{x:9,y:6,o:1}],
+  targets:[{x:9,y:5,c:4},{x:2,y:6,c:3}], shards:[{x:8,y:3}]},
 ];
 
 var DAILY=[
@@ -459,7 +476,7 @@ var DAILY=[
 var ACH=[
  {id:'first',    icon:'🌱', name:'Erste Schritte', desc:'Besiege dein erstes Level.'},
  {id:'perfect',  icon:'💎', name:'Perfektionist',  desc:'3 Sterne in einem Kampagnen-Level.'},
- {id:'pure',     icon:'🧘', name:'Purist',         desc:'3 Sterne ohne 💡 und 🤖.'},
+ {id:'pure',     icon:'🧘', name:'Purist',         desc:'3 Sterne ohne 💡 und .'},
  {id:'speed',    icon:'⚡', name:'Blitzgeist',      desc:'Level in unter 10 Sekunden.'},
  {id:'collector',icon:'✦',  name:'Sammler',        desc:'5 Licht-Splitter gesammelt.'},
  {id:'builder',  icon:'🛠', name:'Baumeister',     desc:'Eigenes Level gespeichert.'},
@@ -469,6 +486,7 @@ var ACH=[
  {id:'blitz',    icon:'⏱', name:'Blitzmeister',    desc:'Blitz-Run unter 90 Sekunden.'},
  {id:'duel',     icon:'⚔', name:'Duellant',       desc:'Ein 2-Spieler-Duell beendet.'},
  {id:'takt',     icon:'🌀', name:'Taktgefühl',     desc:'Ein Rotor-Level gelöst.'},
+ {id:'hard',     icon:'💀', name:'Hardcore',       desc:'Kampagnen-Level perfekt im Hardcore-Modus.'},
  {id:'master',   icon:'👑', name:'Lichtmeister',   desc:'40+ Sterne gesammelt.'},
 ];
 var toastTimer=null;
@@ -511,7 +529,7 @@ var hoverObj=null, hoverKey=null, parts=[], rings=[], edTrace=null, drag=null, l
 var downPos=null, downCellObj=null, lastRotKey='', lastRotT=0, lastDragT=0;
 var BSTARS=[];
 (function(){ for(var i=0;i<46;i++) BSTARS.push({x:Math.random(),y:Math.random(),z:0.3+Math.random()*0.7,ph:Math.random()*6.28}); })();
-var state={ screen:'hub', started:false, current:0, maxUnlocked:0, theme:0, zen:false, cb:false,
+var state={ screen:'hub', started:false, current:0, maxUnlocked:0, theme:0, zen:false, cb:false, hard:false,
             stars:new Array(LEVELS.length).fill(0), totalMoves:0,
             bestTimes:new Array(LEVELS.length).fill(null),
             wins:0, autos:0, duels:0, plays:0, ach:{}, shardMap:{},
@@ -529,7 +547,8 @@ function saveGame(){
       shardMap:state.shardMap, ach:state.ach, blitzBest:state.blitzBest,
       custom:state.custom, customSeq:state.customSeq, wins:state.wins, autos:state.autos,
       duels:state.duels, plays:state.plays, totalMoves:state.totalMoves,
-      theme:state.theme, cb:state.cb, zen:state.zen, sound:soundOn, music:musicOn, current:state.current
+      theme:state.theme, cb:state.cb, zen:state.zen, hard:state.hard,
+      sound:soundOn, music:musicOn, current:state.current
     }));
   }catch(e){}
 }
@@ -554,6 +573,7 @@ function loadGame(){
     if(typeof d.theme==='number') state.theme=d.theme%THEMES.length;
     if(typeof d.cb==='boolean') state.cb=d.cb;
     if(typeof d.zen==='boolean') state.zen=d.zen;
+    if(typeof d.hard==='boolean') state.hard=d.hard;
     if(typeof d.sound==='boolean') soundOn=d.sound;
     if(typeof d.music==='boolean') musicOn=d.music;
     if(typeof d.current==='number') state.current=Math.min(LEVELS.length-1,d.current);
@@ -561,6 +581,7 @@ function loadGame(){
 }
 
 // ================= Audio =================
+var soundOn=true, musicOn=true;
 var actx=null, masterBus=null;
 function ac(){
   if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
@@ -850,6 +871,32 @@ function solve(level){
   return null;
 }
 
+// ================= Level-Codes & URL-Share =================
+function encodeLevel(L){
+  try{ return btoa(unescape(encodeURIComponent(JSON.stringify(L)))); }catch(e){ return null; }
+}
+function decodeLevel(code){
+  try{
+    var L=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    if(!L||typeof L.w!=='number'||typeof L.h!=='number'||!L.emitter||!Array.isArray(L.targets)||!L.targets.length) return null;
+    return L;
+  }catch(e){ return null; }
+}
+function copyText(s){
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(s).catch(function(){}); return; }
+  var ta=document.createElement('textarea'); ta.value=s; document.body.appendChild(ta);
+  ta.select(); try{ document.execCommand('copy'); }catch(e){} document.body.removeChild(ta);
+}
+var pendingImport=null;
+(function(){
+  try{
+    if(location.search && location.search.indexOf('level=')>=0){
+      var code=new URLSearchParams(location.search).get('level');
+      if(code){ var L=decodeLevel(code); if(L) pendingImport=L; }
+    }
+  }catch(e){}
+})();
+
 // ================= Level-Laufzeit =================
 function startLevel(levelObj, mode, meta){
   var src=levelObj;
@@ -948,6 +995,10 @@ function retrace(silent){
   cur.shardKeys=nowShards;
   if(nowKeys.size===cur.lvl.targets.length && !cur.won) winLevel();
 }
+function hardBlock(){
+  if(state.hard){ showToast('💀 Hardcore: keine Hilfen!'); beep(160,0.2,'sawtooth',0.07); return true; }
+  return false;
+}
 function winLevel(){
   cur.won=true; cur.flashT=performance.now();
   cur.timeSec=(performance.now()-cur.t0)/1000;
@@ -963,6 +1014,7 @@ function winLevel(){
     if(bt==null||cur.timeSec<bt) state.bestTimes[cur.idx]=cur.timeSec;
     var prevSh=state.shardMap[cur.idx]||0;
     if(cur.shardKeys.size>prevSh) state.shardMap[cur.idx]=cur.shardKeys.size;
+    if(state.hard && cur.moves<=opt && !cur.usedHelp) unlock('hard');
   }
   if(cur.mode==='campaign' && state.zen){
     state.maxUnlocked=Math.min(LEVELS.length-1, Math.max(state.maxUnlocked, cur.idx+1));
@@ -1016,7 +1068,7 @@ var MODELABEL={campaign:'Kampagne', daily:'Tagesrätsel', custom:'Eigenbau', bli
 function updateHUD(){
   if(!cur) return;
   if(cur.mode==='campaign'){
-    elLvlnum.textContent='Level '+(cur.idx+1)+'/'+LEVELS.length+(state.zen?' · 🧘':'');
+    elLvlnum.textContent='Level '+(cur.idx+1)+'/'+LEVELS.length+(state.zen?' · 🧘':'')+(state.hard?' · 💀':'');
     elLvlname.textContent=cur.lvl.name;
     elDots.innerHTML=LEVELS.map(function(_,i){
       var cls='dot';
@@ -1073,7 +1125,7 @@ function showHub(){
   showOverlay(
    '<div class="panel">'+
      '<div class="big brand">✦ LICHTPFAD ✦</div>'+
-     '<p class="sub">📊 '+state.wins+' Siege · '+totalStars()+'/'+(LEVELS.length*3)+' ★ · '+totalShards()+' ✦ · 🏅 '+achCount+'/'+ACH.length+'</p>'+
+     '<p class="sub">📊 '+state.wins+' Siege · '+totalStars()+'/'+(LEVELS.length*3)+' ★ · '+totalShards()+' ✦ ·  '+achCount+'/'+ACH.length+'</p>'+
      '<div class="menu">'+
        '<button class="mbtn" id="mPlay">'+(state.started?'▶ Weiter spielen':'▶ Los geht\u2019s')+' <span>Kampagne · Level '+(state.current+1)+'/'+LEVELS.length+'</span></button>'+
        '<button class="mbtn" id="mDuel">⚔ Duell <span>2 Spieler · Hotseat</span></button>'+
@@ -1081,6 +1133,7 @@ function showHub(){
        '<button class="mbtn" id="mDaily">📅 Tagesrätsel <span>'+dailySub+'</span></button>'+
        '<button class="mbtn" id="mSelect">⊞ Levelwahl <span>'+totalStars()+'/'+(LEVELS.length*3)+' Sterne</span></button>'+
        '<button class="mbtn" id="mZen">🧘 Zen-Modus <span>'+(state.zen?'AN – alles frei':'AUS')+'</span></button>'+
+       '<button class="mbtn" id="mHard">💀 Hardcore <span>'+(state.hard?'AN – keine Hilfen':'AUS')+'</span></button>'+
        '<button class="mbtn" id="mAch">🏅 Erfolge <span>'+achCount+'/'+ACH.length+'</span></button>'+
        '<button class="mbtn" id="mEditor">🛠 Level-Editor <span>Baue eigene Rätsel</span></button>'+
        '<button class="mbtn" id="mImport">📥 Level-Code laden <span>von Freunden</span></button>'+
@@ -1089,7 +1142,7 @@ function showHub(){
      '<ul class="rules">'+
        '<li>🪞 Tipp = kippen · 🪞 Ziehen = verschieben · ✦ Splitter aufsammeln</li>'+
        '<li>⏱ Rotoren kippen im Takt · 🎨 Filter ·  Portale ·  Ventile · 🩷🩵 Mix</li>'+
-       '<li>💾 Dein Fortschritt wird automatisch auf diesem Gerät gespeichert.</li>'+
+       '<li>💾 Fortschritt & 🔗 geteilte Level-Links werden automatisch erkannt.</li>'+
      '</ul>'+
    '</div>');
   document.getElementById('mPlay').addEventListener('click',function(){
@@ -1111,6 +1164,12 @@ function showHub(){
     queueSave();
     showHub();
   });
+  document.getElementById('mHard').addEventListener('click',function(){
+    state.hard=!state.hard;
+    beep(state.hard?300:520,0.15,'sine',0.1);
+    queueSave();
+    showHub();
+  });
   overlay.querySelectorAll('[data-c]').forEach(function(el){
     el.addEventListener('click',function(){
       var c=state.custom[+el.dataset.c]; if(c){ hideOverlay(); maybeAutoFS(); startLevel(c.level,'custom',{name:c.name}); }
@@ -1121,6 +1180,29 @@ function showHub(){
       state.custom.splice(+el.dataset.cd,1); queueSave(); showHub();
     });
   });
+  if(pendingImport){
+    var L=pendingImport; pendingImport=null;
+    setTimeout(function(){ showImportPanel(L); },350);
+  }
+}
+function showImportPanel(L){
+  showOverlay(
+   '<div class="panel">'+
+     '<div class="big">🔗 Geteiltes Level</div>'+
+     '<p class="sub">'+(L.name||'Ein geteiltes Rätsel')+' · '+L.w+'×'+L.h+'</p>'+
+     '<div class="btnrow" style="margin-top:14px">'+
+       '<button class="btn" id="btnImpPlay">▶ Spielen</button>'+
+       '<button class="btn ghost" id="btnImpEd">🛠 Editor</button>'+
+       '<button class="btn ghost" id="btnImpBack">←</button>'+
+     '</div>'+
+   '</div>');
+  document.getElementById('btnImpPlay').addEventListener('click',function(){
+    hideOverlay(); maybeAutoFS(); startLevel(L,'custom',{name:L.name||'Geteilt'});
+  });
+  document.getElementById('btnImpEd').addEventListener('click',function(){
+    levelToEd(L); hideOverlay(); showEditor();
+  });
+  document.getElementById('btnImpBack').addEventListener('click',showHub);
 }
 function showAch(){
   var rows=ACH.map(function(a){
@@ -1152,7 +1234,7 @@ function showSelect(){
   showOverlay(
    '<div class="panel">'+
      '<div class="big">Levelwahl</div>'+
-     '<p class="sub">Gesamtsterne: '+totalStars()+'/'+(LEVELS.length*3)+(state.zen?' · 🧘 Zen':'')+'</p>'+
+     '<p class="sub">Gesamtsterne: '+totalStars()+'/'+(LEVELS.length*3)+(state.zen?' · 🧘 Zen':'')+(state.hard?' · 💀 Hardcore':'')+'</p>'+
      '<div class="cards">'+cards+'</div>'+
      '<div class="btnrow" style="margin-top:18px">'+
        '<button class="btn ghost" id="btnBack">← Zurück</button>'+
@@ -1308,17 +1390,7 @@ function showEndOverlay(){
   document.getElementById('btnHubC').addEventListener('click',function(){ hideOverlay(); showHub(); });
 }
 
-// ================= Level-Codes =================
-function encodeLevel(L){
-  try{ return btoa(unescape(encodeURIComponent(JSON.stringify(L)))); }catch(e){ return null; }
-}
-function decodeLevel(code){
-  try{
-    var L=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
-    if(!L||typeof L.w!=='number'||typeof L.h!=='number'||!L.emitter||!Array.isArray(L.targets)||!L.targets.length) return null;
-    return L;
-  }catch(e){ return null; }
-}
+// ================= Code-Share-Overlay =================
 function showShare(code){
   unlock('sharer');
   showOverlay(
@@ -1332,9 +1404,7 @@ function showShare(code){
      '</div>'+
    '</div>');
   document.getElementById('btnCopy').addEventListener('click',function(){
-    var ta=document.getElementById('taCode');
-    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(ta.value).catch(function(){}); }
-    else{ ta.select(); try{ document.execCommand('copy'); }catch(e){} }
+    copyText(document.getElementById('taCode').value);
     beep(760,0.12,'sine',0.1);
   });
   document.getElementById('btnShBack').addEventListener('click',backToEditor);
@@ -1548,6 +1618,16 @@ document.getElementById('edShare').addEventListener('click',function(){
   var code=encodeLevel(v.level);
   if(code) showShare(code);
 });
+document.getElementById('edLink').addEventListener('click',function(){
+  var v=validateEd();
+  if(!v.ok){ edSetMsg('⚠ '+v.msg); return; }
+  var code=encodeLevel(v.level);
+  if(!code) return;
+  var url=location.origin+location.pathname+'?level='+encodeURIComponent(code);
+  copyText(url);
+  edSetMsg('🔗 Link kopiert – teilen & öffnen!');
+  beep(760,0.12,'sine',0.1);
+});
 document.getElementById('edClear').addEventListener('click',function(){
   ed.cells.clear(); ed.emitter=null; edUpdate(); edSetMsg('Feld geleert.');
 });
@@ -1671,7 +1751,6 @@ cv.addEventListener('pointercancel',function(){ drag=null; downPos=null; downCel
 cv.addEventListener('mouseleave',function(){ hoverObj=null; hoverKey=null; });
 cv.addEventListener('contextmenu',function(e){ e.preventDefault(); });
 
-// Tastatur-Shortcuts
 window.addEventListener('keydown',function(e){
   if(e.repeat) return;
   if(e.target && (e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')) return;
@@ -1688,6 +1767,7 @@ window.addEventListener('keydown',function(e){
 });
 
 btnUndo.addEventListener('click',function(){
+  if(state.hard){ hardBlock(); return; }
   if(!cur||cur.won||(state.screen!=='play'&&state.screen!=='test')||!cur.hist.length) return;
   var h=cur.hist.pop();
   if(h.t==='rot'){
@@ -1709,6 +1789,7 @@ btnReset.addEventListener('click',function(){
   }
 });
 btnHint.addEventListener('click',function(){
+  if(state.hard){ hardBlock(); return; }
   if(!cur||cur.won||(state.screen!=='play'&&state.screen!=='test')) return;
   if(!cur.hintSol){ showToast('⚠ Kein Lösungsweg (Timing-Level oder unlösbar).'); beep(180,0.2,'sawtooth',0.06); return; }
   cur.usedHelp=true;
@@ -1716,6 +1797,7 @@ btnHint.addEventListener('click',function(){
   sHint();
 });
 btnAuto.addEventListener('click',function(){
+  if(state.hard){ hardBlock(); return; }
   if(!cur||cur.won||(state.screen!=='play'&&state.screen!=='test')) return;
   if(!cur.solution){ showToast('⚠ Keine Lösung verfügbar – Level prüfen.'); beep(180,0.2,'sawtooth',0.06); return; }
   cur.autoUsed=true;
@@ -1760,7 +1842,7 @@ btnMenu.addEventListener('click',function(){
   if(state.screen==='play'||state.screen==='select'||state.screen==='end') showHub();
 });
 btnSound.addEventListener('click',function(){
-  soundOn=!soundOn; btnSound.textContent=soundOn?'🔊':'';
+  soundOn=!soundOn; btnSound.textContent=soundOn?'🔊':'🔇';
   if(soundOn){ ensureAudio(); beep(660,0.12,'sine',0.1); }
   queueSave();
 });
@@ -1916,7 +1998,7 @@ function drawBeams(trace,emitter,t){
   if(emitter){
     var ex=px(emitter.x)+DIRS[emitter.d].x*cell*0.4, ey=py(emitter.y)+DIRS[emitter.d].y*cell*0.4;
     var g=ctx.createRadialGradient(ex,ey,0,ex,ey,cell*0.4);
-    g.addColorStop(0,'rgba(190,240,255,0.7)'); g.addColorStop(1,'rgba(190,240,255,0)');
+    g.addColorStop(0,'rgba(190,240,255,0.7)'; g.addColorStop(1,'rgba(190,240,255,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(ex,ey,cell*0.4,0,Math.PI*2); ctx.fill();
   }
 }
@@ -2131,7 +2213,6 @@ function drawTarget(tg,t,trace){
       ctx.stroke();
     }
     ctx.restore();
-    // Orbit-Sparkles
     for(var s2=0;s2<2;s2++){
       var an=t*0.004+s2*Math.PI;
       var ox2=cx+Math.cos(an)*r*1.5, oy2=cy+Math.sin(an)*r*0.9;
@@ -2295,7 +2376,7 @@ function drawGameScene(t,dt){
     ctx.lineWidth=2.5;
     ctx.beginPath(); ctx.arc(rg.x,rg.y,rg.r,0,Math.PI*2); ctx.stroke();
   });
-  var dtN=dt/16.7;
+  var dtN=dt;
   parts=parts.filter(function(p){ return p.life>0; });
   parts.forEach(function(p){
     p.life-=0.02*p.decay*dtN;
