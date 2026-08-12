@@ -68,7 +68,7 @@
     color:#cfe6ff; width:2.5rem; height:2.5rem; border-radius:12px; cursor:pointer; font-size:1.15rem; line-height:1; padding:0;
   }
   .iconbtn:hover{ background:rgba(255,255,255,.12); }
-  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:170px; }
+  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:190px; }
   .dot{ width:8px; height:8px; border-radius:50%; background:#2a3450; border:1px solid #3b4a72; }
   .dot.done{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 8px rgba(95,224,255,.7); }
   .dot.cur{ border-color:#c9b2ff; box-shadow:0 0 0 3px rgba(201,178,255,.22); }
@@ -189,11 +189,11 @@
 <div id="app">
   <header>
     <h1>✦ LICHTPFAD ✦</h1>
-    <p>Das Licht-Rätsel · 20 Level · Splitter · Erfolge · Editor</p>
+    <p>Das Licht-Rätsel · 22 Level · Zen · Themes · Editor</p>
   </header>
   <div id="topbar">
     <div id="lvlinfo">
-      <span id="lvlnum">Level 1/20</span>
+      <span id="lvlnum">Level 1/22</span>
       <span id="lvlname">–</span>
     </div>
     <div id="tb-right">
@@ -203,6 +203,7 @@
       <button class="iconbtn" id="btnReset" title="Zurücksetzen">⟳</button>
       <button class="iconbtn" id="btnHint"  title="Lösung kurz anzeigen">💡</button>
       <button class="iconbtn" id="btnAuto"  title="Automatisch lösen">🤖</button>
+      <button class="iconbtn" id="btnTheme" title="Board-Theme wechseln">🎨</button>
       <button class="iconbtn" id="btnMenu"  title="Menü">⊞</button>
       <button class="iconbtn" id="btnSound" title="Effekte an/aus">🔊</button>
       <button class="iconbtn" id="btnMusic" title="Musik an/aus">🎵</button>
@@ -242,6 +243,13 @@ function refl(d,o){ return o===0 ? [1,0,3,2][d] : [3,2,1,0][d]; }
 function angOf(o){ return o ? Math.PI/4 : -Math.PI/4; }
 function getRots(level){ return [].concat(level.mirrors||[],level.splitters||[],level.prism||[]); }
 function vib(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+
+// ================= Themes =================
+var THEMES=[
+ {name:'Nebula', bg1:'#101c34', bg2:'#0a1120', aur1:'80,160,255',  aur2:'200,120,255', grid:'148,180,255', edge:'127,232,255'},
+ {name:'Sunset', bg1:'#2a1430', bg2:'#120a18', aur1:'255,140,90',  aur2:'255,80,180',  grid:'255,170,140', edge:'255,190,120'},
+ {name:'Neo',    bg1:'#0a2018', bg2:'#06120c', aur1:'60,255,170',  aur2:'120,255,80',  grid:'120,255,190', edge:'140,255,200'},
+];
 
 var BEAMRGB =[[120,228,255],[255,99,120],[92,232,146],[132,146,255],[255,220,90],[255,120,220],[90,230,230]];
 var BEAMCORE=['#eafcff','#ffe3e8','#e2ffe9','#e4e6ff','#fff6d0','#ffe3f6','#e0fbfb'];
@@ -332,12 +340,26 @@ var LEVELS=[
   prism:[{x:2,y:3,o:1}],
   mirrors:[{x:6,y:3,o:0},{x:2,y:6,o:0},{x:6,y:6,o:1},{x:2,y:0,o:1}],
   targets:[{x:6,y:5,c:5},{x:8,y:0,c:2}]},
- {name:"Cyan-Finale", hint:"Cyan 🩵 = GRÜN + BLAU. Das große Finale!",
+ {name:"Cyan-Finale", hint:"Cyan 🩵 = GRÜN + BLAU. Ventile, Portale, alles dabei!",
   w:10,h:7, emitter:{x:0,y:3,d:1},
   prism:[{x:2,y:3,o:1}],
-  mirrors:[{x:2,y:0,o:1},{x:8,y:0,o:0},{x:2,y:6,o:0}],
+  mirrors:[{x:2,y:0,o:1},{x:8,y:0,o:0},{x:2,y:6,o:0},{x:6,y:6,o:1}],
+  gates:[{x:5,y:3,d:1}],
   portals:[{a:{x:6,y:6},b:{x:6,y:4}}],
-  targets:[{x:9,y:3,c:1},{x:8,y:4,c:6}], shards:[{x:8,y:2}]},
+  targets:[{x:9,y:3,c:1},{x:6,y:5,c:6}], shards:[{x:6,y:4}]},
+ {name:"Zwillingslicht", hint:"Cyan braucht Grün UND Blau – das Ventil bewacht das Rot.",
+  w:10,h:7, emitter:{x:0,y:3,d:1},
+  prism:[{x:2,y:3,o:0}],
+  mirrors:[{x:2,y:0,o:1},{x:6,y:0,o:0},{x:2,y:6,o:0},{x:6,y:6,o:1}],
+  gates:[{x:5,y:3,d:1}],
+  targets:[{x:9,y:3,c:1},{x:6,y:5,c:6}], shards:[{x:6,y:4}]},
+ {name:"Omega", hint:"Das letzte Rätsel: Prisma, Portal & Schieber. Werde eins mit dem Licht!",
+  w:10,h:7, emitter:{x:0,y:3,d:1},
+  prism:[{x:2,y:3,o:1}],
+  mirrors:[{x:2,y:0,o:1}],
+  movables:[{x:4,y:1,o:0}],
+  portals:[{a:{x:5,y:3},b:{x:5,y:6}}],
+  targets:[{x:9,y:6,c:1},{x:9,y:0,c:2},{x:9,y:5,c:3}], shards:[{x:6,y:5}]},
 ];
 
 var DAILY=[
@@ -380,6 +402,7 @@ var ACH=[
  {id:'builder',  icon:'🛠', name:'Baumeister',     desc:'Eigenes Level gespeichert.'},
  {id:'sharer',   icon:'📤', name:'Architekt',      desc:'Level-Code erzeugt.'},
  {id:'daily',    icon:'📅', name:'Tageslicht',     desc:'Tagesrätsel gelöst.'},
+ {id:'zen',      icon:'🪷', name:'Erleuchtet',     desc:'Level im Zen-Modus gelöst.'},
  {id:'master',   icon:'👑', name:'Lichtmeister',   desc:'40+ Sterne gesammelt.'},
 ];
 var toastTimer=null;
@@ -410,7 +433,7 @@ var elLvlnum=document.getElementById('lvlnum'), elLvlname=document.getElementByI
 var elMoves=document.getElementById('moves'), elHint=document.getElementById('hint'), elDots=document.getElementById('dots');
 var btnUndo=document.getElementById('btnUndo'), btnReset=document.getElementById('btnReset');
 var btnHint=document.getElementById('btnHint'), btnAuto=document.getElementById('btnAuto');
-var btnMenu=document.getElementById('btnMenu');
+var btnTheme=document.getElementById('btnTheme'), btnMenu=document.getElementById('btnMenu');
 var btnSound=document.getElementById('btnSound'), btnMusic=document.getElementById('btnMusic');
 var edbar=document.getElementById('edbar'), paletteEl=document.getElementById('palette'), edMsgEl=document.getElementById('edMsg');
 
@@ -418,7 +441,9 @@ var edbar=document.getElementById('edbar'), paletteEl=document.getElementById('p
 var cur=null, cell=48, pad=14, dpr=1, viewW=8, viewH=6, shake=0;
 var hoverObj=null, hoverKey=null, parts=[], rings=[], edTrace=null, drag=null, litSet=new Set();
 var downPos=null, downCellObj=null, lastRotKey='', lastRotT=0, lastDragT=0;
-var state={ screen:'hub', started:false, current:0, maxUnlocked:0,
+var BSTARS=[];
+(function(){ for(var i=0;i<46;i++) BSTARS.push({x:Math.random(),y:Math.random(),z:0.3+Math.random()*0.7,ph:Math.random()*6.28}); })();
+var state={ screen:'hub', started:false, current:0, maxUnlocked:0, theme:0, zen:false,
             stars:new Array(LEVELS.length).fill(0), totalMoves:0,
             bestTimes:new Array(LEVELS.length).fill(null),
             wins:0, autos:0, ach:{}, shardMap:{},
@@ -447,8 +472,8 @@ function sShard(){ beep(1320,0.15,'sine',0.1); beep(1760,0.2,'sine',0.07,0.07); 
 function sWin(){ [523,659,784,1046].forEach(function(f,i){ beep(f,0.4,'sine',0.13,i*0.11); }); }
 function sHint(){ beep(1180,0.18,'sine',0.07); }
 
-// ================= Audio: BGM (2 Progressionen, Motiv, Hats) =================
-var musicOn=true, mNodes=null, mTimer=null, mStep=0, mNext=0, mLoop=0, noiseBuf=null;
+// ================= Audio: BGM (dynamisch) =================
+var musicOn=true, mNodes=null, mTimer=null, mStep=0, mNext=0, mLoop=0, noiseBuf=null, mIntensity=0;
 var PROG_A=[[57,60,64],[53,57,60],[48,52,55],[55,59,62]];
 var PROG_B=[[57,60,64],[55,59,62],[53,57,60],[48,52,55]];
 var PENTA=[69,72,74,76,79,81,84];
@@ -491,14 +516,15 @@ function mPlayStep(step,t,spb){
   var bar=Math.floor(step/8)%4, inBar=step%8, ch=PROG[bar];
   if(inBar===0){
     ch.forEach(function(m){ mPad(mFreq(m),t,spb*8,master,a); });
-    mBass(mFreq(BASSN(ch,0)),t,spb*4,master,a);
+    mBass(mFreq(ch[0]-12),t,spb*4,master,a);
+    mKick(t,master,a);
   }
   if(inBar===4){
-    mBass(mFreq(BASSN(ch,1)),t,spb*4,master,a);
+    mBass(mFreq(ch[0]-5),t,spb*4,master,a);
   }
-  if(inBar%2===1) mHat(t,master,a);
+  if(inBar%2===1) mHat(t,master,a,0.010+0.008*mIntensity);
   if(inBar===2||inBar===6){
-    if(Math.random()<0.5){
+    if(Math.random()<0.35+0.3*mIntensity){
       var pool=[ch[0]+12,ch[1]+12,ch[2]+12].concat(PENTA);
       mPluck(mFreq(pool[(Math.random()*pool.length)|0]),t,master,delay,a,0.065);
     }
@@ -506,8 +532,10 @@ function mPlayStep(step,t,spb){
   if(inBar===3||inBar===7){
     mPluck(mFreq(ch[2]+12),t,master,delay,a,0.04);
   }
+  if(mIntensity>0.6 && inBar%2===0){
+    mPluck(mFreq(ch[2]+24),t,master,delay,a,0.02);
+  }
 }
-function BASSN(ch,half){ return half===0 ? ch[0]-12 : ch[0]-5; }
 function mPad(f,t,dur,master,a){
   var o=a.createOscillator(); o.type='sine'; o.frequency.value=f;
   var o2=a.createOscillator(); o2.type='triangle'; o2.frequency.value=f*1.006;
@@ -526,12 +554,24 @@ function mBass(f,t,dur,master,a){
   g.gain.linearRampToValueAtTime(0.0001,t+dur);
   o.connect(g); g.connect(master); o.start(t); o.stop(t+dur+0.1);
 }
-function mHat(t,master,a){
+function mKick(t,master,a){
+  try{
+    var o=a.createOscillator(); o.type='sine';
+    o.frequency.setValueAtTime(120,t);
+    o.frequency.exponentialRampToValueAtTime(45,t+0.12);
+    var g=a.createGain();
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(0.07,t+0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.16);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t+0.2);
+  }catch(e){}
+}
+function mHat(t,master,a,vol){
   try{
     var src=a.createBufferSource(); src.buffer=getNoise(a);
     var f=a.createBiquadFilter(); f.type='highpass'; f.frequency.value=6500;
     var g=a.createGain();
-    g.gain.setValueAtTime(0.014,t);
+    g.gain.setValueAtTime(vol,t);
     g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
     src.connect(f); f.connect(g); g.connect(master);
     src.start(t);
@@ -576,7 +616,7 @@ function traceLevel(level, orient){
   });
   put(level.emitter.x,level.emitter.y,{t:'emitter'});
 
-  var beams=[], hits=new Map(), wrongT=new Set(), shardHits=new Set();
+  var beams=[], hits=new Map(), wrongT=new Set(), shardHits=new Set(), portalUsed=new Set();
   var q=[{x:level.emitter.x,y:level.emitter.y,d:level.emitter.d,col:0}];
   var bg=0;
   while(q.length && bg++<80){
@@ -610,6 +650,7 @@ function traceLevel(level, orient){
           pts.push({x:x+dx*0.5,y:y+dy*0.5}); break;
         }
         if(c.t==='portal'){
+          portalUsed.add(key); portalUsed.add(c.ox+","+c.oy);
           pts.push({x:nx,y:ny});
           pts.push({x:c.ox,y:c.oy});
           x=c.ox; y=c.oy; continue;
@@ -635,7 +676,7 @@ function traceLevel(level, orient){
     }
     beams.push({pts:pts,col:col});
   }
-  return {beams:beams,hits:hits,wrongT:wrongT,shards:shardHits};
+  return {beams:beams,hits:hits,wrongT:wrongT,shards:shardHits,portals:portalUsed};
 }
 function litTargets(level,trace){
   return new Set(level.targets.filter(function(tg){
@@ -737,6 +778,7 @@ function startLevel(levelObj, mode, meta){
   retrace(true);
   cur.litKeys=litTargets(lvl,cur.trace);
   cur.shardKeys=new Set(cur.trace.shards);
+  mIntensity=0;
   updateHUD();
 }
 function loadCampaign(i){ startLevel(LEVELS[i],'campaign',{idx:i}); state.current=i; }
@@ -752,6 +794,7 @@ function retrace(silent){
   cur.trace=traceLevel(cur.lvl,null);
   var nowKeys=litTargets(cur.lvl,cur.trace);
   var nowShards=cur.trace.shards;
+  mIntensity = cur.lvl.targets.length ? nowKeys.size/cur.lvl.targets.length : 0;
   if(!silent){
     nowKeys.forEach(function(k){
       if(!cur.litKeys.has(k)){
@@ -779,7 +822,7 @@ function winLevel(){
   cur.earned = cur.autoUsed ? 1 : (cur.moves<=opt ? 3 : cur.moves<=opt+2 ? 2 : 1);
   state.wins++;
   if(cur.autoUsed) state.autos++;
-  if(cur.mode==='campaign'){
+  if(cur.mode==='campaign' && !state.zen){
     state.stars[cur.idx]=Math.max(state.stars[cur.idx],cur.earned);
     state.totalMoves+=cur.moves;
     state.maxUnlocked=Math.min(LEVELS.length-1, Math.max(state.maxUnlocked, cur.idx+1));
@@ -788,9 +831,13 @@ function winLevel(){
     var prevSh=state.shardMap[cur.idx]||0;
     if(cur.shardKeys.size>prevSh) state.shardMap[cur.idx]=cur.shardKeys.size;
   }
+  if(cur.mode==='campaign' && state.zen){
+    state.maxUnlocked=Math.min(LEVELS.length-1, Math.max(state.maxUnlocked, cur.idx+1));
+  }
   unlock('first');
-  if(cur.mode==='campaign' && cur.earned===3) unlock('perfect');
-  if(cur.mode==='campaign' && cur.earned===3 && !cur.usedHelp) unlock('pure');
+  if(state.zen) unlock('zen');
+  if(cur.mode==='campaign' && cur.earned===3 && !state.zen) unlock('perfect');
+  if(cur.mode==='campaign' && cur.earned===3 && !cur.usedHelp && !state.zen) unlock('pure');
   if(cur.timeSec<10) unlock('speed');
   if(cur.mode==='daily') unlock('daily');
   if(totalShards()>=5) unlock('collector');
@@ -821,7 +868,7 @@ function fmtTime(s){ return s.toFixed(1).replace('.',',')+' s'; }
 function updateHUD(){
   if(!cur) return;
   if(cur.mode==='campaign'){
-    elLvlnum.textContent='Level '+(cur.idx+1)+'/'+LEVELS.length;
+    elLvlnum.textContent='Level '+(cur.idx+1)+'/'+LEVELS.length+(state.zen?' · 🧘':'');
     elLvlname.textContent=cur.lvl.name;
     elDots.innerHTML=LEVELS.map(function(_,i){
       var cls='dot';
@@ -873,6 +920,7 @@ function showHub(){
        '<button class="mbtn" id="mPlay">'+(state.started?'▶ Weiter spielen':'▶ Los geht\u2019s')+' <span>Kampagne · Level '+(state.current+1)+'/'+LEVELS.length+'</span></button>'+
        '<button class="mbtn" id="mDaily">📅 Tagesrätsel <span>'+dailySub+'</span></button>'+
        '<button class="mbtn" id="mSelect">⊞ Levelwahl <span>'+totalStars()+'/'+(LEVELS.length*3)+' Sterne</span></button>'+
+       '<button class="mbtn" id="mZen">🧘 Zen-Modus <span>'+(state.zen?'AN – alles frei':'AUS')+'</span></button>'+
        '<button class="mbtn" id="mAch">🏅 Erfolge <span>'+achCount+'/'+ACH.length+'</span></button>'+
        '<button class="mbtn" id="mEditor">🛠 Level-Editor <span>Baue eigene Rätsel</span></button>'+
        '<button class="mbtn" id="mImport">📥 Level-Code laden <span>von Freunden</span></button>'+
@@ -880,8 +928,8 @@ function showHub(){
      customHtml+
      '<ul class="rules">'+
        '<li>🪞 Tipp = kippen · 🪞⇄ Ziehen = verschieben · ✦ Splitter aufsammeln</li>'+
-       '<li>🎨 Filter · 🌀 Portale · ⏩ Ventile · 🟡🩷🩵 Mix = zwei Farben gleichzeitig</li>'+
-       '<li>🤖 steckt fest? Der Roboter löst jedes Level für dich.</li>'+
+       '<li>🎨 Filter ·  Portale · ⏩ Ventile · 🟡🩷🩵 Mix = zwei Farben gleichzeitig</li>'+
+       '<li>🎨 Theme & 🧘 Zen oben/im Menü · 🤖 löst notfalls jedes Level.</li>'+
      '</ul>'+
    '</div>');
   document.getElementById('mPlay').addEventListener('click',function(){
@@ -895,6 +943,11 @@ function showHub(){
   document.getElementById('mAch').addEventListener('click',showAch);
   document.getElementById('mEditor').addEventListener('click',showEditor);
   document.getElementById('mImport').addEventListener('click',showImport);
+  document.getElementById('mZen').addEventListener('click',function(){
+    state.zen=!state.zen;
+    beep(state.zen?520:392,0.15,'sine',0.1);
+    showHub();
+  });
   overlay.querySelectorAll('[data-c]').forEach(function(el){
     el.addEventListener('click',function(){
       var c=state.custom[+el.dataset.c]; if(c){ hideOverlay(); startLevel(c.level,'custom',{name:c.name}); }
@@ -916,7 +969,7 @@ function showAch(){
   showOverlay(
    '<div class="panel">'+
      '<div class="big">🏅 Erfolge</div>'+
-     '<p class="sub">'+totalShards()+' ✦ gesammelt · '+state.wins+' Siege</p>'+
+     '<p class="sub">'+totalShards()+' ✦ gesammelt · '+state.wins+' Siege · Theme: '+THEMES[state.theme].name+'</p>'+
      '<div style="margin-top:12px">'+rows+'</div>'+
      '<div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="btnAchBack">← Zurück</button></div>'+
    '</div>');
@@ -925,7 +978,7 @@ function showAch(){
 function showSelect(){
   state.screen='select';
   var cards=LEVELS.map(function(L,i){
-    var unlocked=i<=state.maxUnlocked;
+    var unlocked=state.zen || i<=state.maxUnlocked;
     var s=state.stars[i];
     return '<button class="card '+(unlocked?'':'locked')+' '+(cur&&cur.mode==='campaign'&&i===cur.idx?'cur':'')+'" data-i="'+i+'">'+
       '<span class="cnum">'+(i+1)+'</span>'+
@@ -936,7 +989,7 @@ function showSelect(){
   showOverlay(
    '<div class="panel">'+
      '<div class="big">Levelwahl</div>'+
-     '<p class="sub">Gesamtsterne: '+totalStars()+'/'+(LEVELS.length*3)+'</p>'+
+     '<p class="sub">Gesamtsterne: '+totalStars()+'/'+(LEVELS.length*3)+(state.zen?' · 🧘 Zen':'')+'</p>'+
      '<div class="cards">'+cards+'</div>'+
      '<div class="btnrow" style="margin-top:18px">'+
        '<button class="btn ghost" id="btnBack">← Zurück</button>'+
@@ -945,7 +998,7 @@ function showSelect(){
   overlay.querySelectorAll('.card').forEach(function(el){
     el.addEventListener('click',function(){
       var i=+el.dataset.i;
-      if(i>state.maxUnlocked) return;
+      if(!(state.zen || i<=state.maxUnlocked)) return;
       ensureAudio(); hideOverlay(); state.started=true;
       loadCampaign(i);
       beep(600,0.1,'sine',0.08);
@@ -963,7 +1016,7 @@ function showWinOverlay(){
   var head, buttons;
   if(m==='campaign'){
     var last=cur.idx===LEVELS.length-1;
-    head=cur.earned===3?'✨ Perfekt!':'✨ Geschafft!';
+    head=(state.zen?'🧘 Zen: ':(cur.earned===3?'✨ Perfekt!':'✨ Geschafft!'));
     buttons='<button class="btn" id="btnNext">'+(last?'🏆 Ergebnis ansehen':'Nächstes Level →')+'</button>'+
              '<button class="btn ghost" id="btnToHub">⊞</button>';
   } else if(m==='daily'){
@@ -1430,6 +1483,11 @@ btnAuto.addEventListener('click',function(){
   retrace(false);
   updateHUD();
 });
+btnTheme.addEventListener('click',function(){
+  state.theme=(state.theme+1)%THEMES.length;
+  showToast('🎨 Theme: '+THEMES[state.theme].name);
+  beep(560,0.1,'sine',0.09);
+});
 btnMenu.addEventListener('click',function(){
   if(state.screen==='test'){ hideOverlay(); backToEditor(); return; }
   if(state.screen==='editor'){ edbar.classList.add('hidden'); showHub(); return; }
@@ -1445,7 +1503,7 @@ btnMusic.addEventListener('click',function(){
   if(musicOn) ensureAudio(); else stopMusic();
 });
 
-// ================= Partikel, Konfetti, Ringe =================
+// ================= Partikel =================
 var PCOLS=['#ffd76a','#7fe8ff','#ffffff','#ff9df0','#9dff9d'];
 function burst(x,y,big,kind){
   var n=big?44:10;
@@ -1500,30 +1558,38 @@ window.addEventListener('resize',resize);
 
 function poly(P){ ctx.beginPath(); ctx.moveTo(P[0].x,P[0].y); for(var i=1;i<P.length;i++) ctx.lineTo(P[i].x,P[i].y); }
 function drawBoard(w,h,t){
+  var TH=THEMES[state.theme];
   var cw=cell*w+pad*2, ch=cell*h+pad*2;
   var bg=ctx.createLinearGradient(0,0,0,ch);
-  bg.addColorStop(0,'#101c34'); bg.addColorStop(1,'#0a1120');
+  bg.addColorStop(0,TH.bg1); bg.addColorStop(1,TH.bg2);
   ctx.fillStyle=bg; rr(1,1,cw-2,ch-2,15); ctx.fill();
-  ctx.strokeStyle='rgba(140,180,255,0.16)'; ctx.lineWidth=1; ctx.stroke();
-  // Aurora-Nebel
+  ctx.strokeStyle='rgba('+TH.grid+',0.16)'; ctx.lineWidth=1; ctx.stroke();
+  // Parallax-Sterne
+  BSTARS.forEach(function(s){
+    var sx=(s.x*cw + t*0.004*s.z)%cw;
+    var sy=(s.y*ch + t*0.0015*s.z)%ch;
+    var al=0.15+0.25*(0.5+0.5*Math.sin(t*0.001+s.ph));
+    ctx.fillStyle='rgba(255,255,255,'+al*s.z+')';
+    ctx.beginPath(); ctx.arc(sx,sy,s.z*1.4,0,Math.PI*2); ctx.fill();
+  });
   var ax=cw*0.5+Math.cos(t*0.00013)*cw*0.28, ay=ch*0.35+Math.sin(t*0.00017)*ch*0.22;
   var g1=ctx.createRadialGradient(ax,ay,0,ax,ay,cw*0.55);
-  g1.addColorStop(0,'rgba(80,160,255,0.07)'); g1.addColorStop(1,'rgba(0,0,0,0)');
+  g1.addColorStop(0,'rgba('+TH.aur1+',0.07)'); g1.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=g1; ctx.fillRect(0,0,cw,ch);
   var bx=cw*0.5+Math.cos(t*0.00011+2.4)*cw*0.3, by=ch*0.6+Math.sin(t*0.00015+1.2)*ch*0.25;
   var g2=ctx.createRadialGradient(bx,by,0,bx,by,cw*0.5);
-  g2.addColorStop(0,'rgba(200,120,255,0.06)'); g2.addColorStop(1,'rgba(0,0,0,0)');
+  g2.addColorStop(0,'rgba('+TH.aur2+',0.06)'); g2.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=g2; ctx.fillRect(0,0,cw,ch);
   for(var gy=0;gy<h;gy++) for(var gx=0;gx<w;gx++){
     if((gx+gy)%2===0){ ctx.fillStyle='rgba(255,255,255,0.016)'; ctx.fillRect(pad+gx*cell,pad+gy*cell,cell,cell); }
   }
-  ctx.strokeStyle='rgba(148,180,255,0.07)'; ctx.lineWidth=1;
+  ctx.strokeStyle='rgba('+TH.grid+',0.07)'; ctx.lineWidth=1;
   for(var i=0;i<=w;i++){ ctx.beginPath(); ctx.moveTo(pad+i*cell,pad); ctx.lineTo(pad+i*cell,pad+h*cell); ctx.stroke(); }
   for(var j=0;j<=h;j++){ ctx.beginPath(); ctx.moveTo(pad,pad+j*cell); ctx.lineTo(pad+w*cell,pad+j*cell); ctx.stroke(); }
   var vg=ctx.createRadialGradient(cw/2,ch/2,Math.min(cw,ch)*0.35,cw/2,ch/2,Math.max(cw,ch)*0.78);
   vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.34)');
   ctx.fillStyle=vg; ctx.fillRect(0,0,cw,ch);
-  ctx.strokeStyle='rgba(127,232,255,0.35)'; ctx.lineWidth=2;
+  ctx.strokeStyle='rgba('+TH.edge+',0.35)'; ctx.lineWidth=2;
   var L=cell*0.45, m=6;
   [[m,m,1,1],[cw-m,m,-1,1],[m,ch-m,1,-1],[cw-m,ch-m,-1,-1]].forEach(function(c){
     ctx.beginPath();
@@ -1650,20 +1716,27 @@ function drawGate(g,t){
   ctx.globalAlpha=1;
   ctx.restore();
 }
-function drawPortalCell(x,y,t){
+function drawPortalCell(x,y,t,used){
   var cx=px(x), cy=py(y), r=cell*0.30;
   var g=ctx.createRadialGradient(cx,cy,0,cx,cy,r*1.5);
-  g.addColorStop(0,'rgba(190,120,255,0.45)'); g.addColorStop(1,'rgba(190,120,255,0)');
+  g.addColorStop(0,used?'rgba(220,150,255,0.6)':'rgba(190,120,255,0.45)'); g.addColorStop(1,'rgba(190,120,255,0)');
   ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r*1.5,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='#150b26'; ctx.beginPath(); ctx.arc(cx,cy,r*0.72,0,Math.PI*2); ctx.fill();
   ctx.save();
   ctx.strokeStyle='rgba(210,150,255,0.9)'; ctx.lineWidth=2.2;
-  ctx.setLineDash([cell*0.14,cell*0.11]); ctx.lineDashOffset=-t*0.02;
+  ctx.setLineDash([cell*0.14,cell*0.11]); ctx.lineDashOffset=-t*(used?0.06:0.02);
   ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
-  ctx.setLineDash([cell*0.07,cell*0.09]); ctx.lineDashOffset=t*0.03;
+  ctx.setLineDash([cell*0.07,cell*0.09]); ctx.lineDashOffset=t*(used?0.09:0.03);
   ctx.strokeStyle='rgba(240,200,255,0.7)'; ctx.lineWidth=1.4;
   ctx.beginPath(); ctx.arc(cx,cy,r*0.45,0,Math.PI*2); ctx.stroke();
   ctx.restore();
+  if(used){
+    var a=t*0.01;
+    ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.arc(cx,cy,r*0.6,a,a+1.6);
+    ctx.stroke();
+  }
 }
 function drawShard(sx,sy,lit,t){
   var cx=px(sx), cy=py(sy);
@@ -1681,7 +1754,7 @@ function drawShard(sx,sy,lit,t){
   ctx.fill();
   ctx.restore();
 }
-function drawBar(cx,cy,ang,isSplit){
+function drawBar(cx,cy,ang,isSplit,t){
   ctx.fillStyle='rgba(255,255,255,0.035)';
   ctx.beginPath(); ctx.arc(cx,cy,cell*0.35,0,Math.PI*2); ctx.fill();
   ctx.strokeStyle='rgba(255,255,255,0.08)'; ctx.lineWidth=1; ctx.stroke();
@@ -1699,6 +1772,13 @@ function drawBar(cx,cy,ang,isSplit){
     ctx.strokeStyle='rgba(20,30,50,0.6)'; ctx.lineWidth=1; ctx.stroke();
     ctx.strokeStyle='rgba(255,255,255,0.85)'; ctx.lineWidth=Math.max(1.2,cell*0.02);
     ctx.beginPath(); ctx.moveTo(-L/2+4,-th*0.26); ctx.lineTo(L/2-4,-th*0.26); ctx.stroke();
+    // Glanz-Sweep
+    var ph=((t*0.00022)+(cx%97)/97)%1;
+    var gx=-L/2+ph*L;
+    var gg=ctx.createLinearGradient(gx-cell*0.12,0,gx+cell*0.12,0);
+    gg.addColorStop(0,'rgba(255,255,255,0)'); gg.addColorStop(0.5,'rgba(255,255,255,0.35)'); gg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=gg;
+    ctx.fillRect(gx-cell*0.12,-th/2,cell*0.24,th);
   }
   ctx.restore();
   if(isSplit){
@@ -1776,7 +1856,6 @@ function drawTarget(tg,t,trace){
     }
     ctx.restore();
   } else {
-    // idle sparkle
     var ph=((cx*7+cy*13)%10)/10;
     var sp=Math.max(0,Math.sin(t*0.002+ph*6.28));
     if(sp>0.85){
@@ -1833,7 +1912,7 @@ function drawGameRotatable(c,kind,t,dt){
   var cx=px(c.x), cy=py(c.y);
   var a=v?v.a:angOf(c.o);
   if(kind==='movable') drawMovableMarks(cx,cy);
-  if(kind==='prism') drawPrism(cx,cy,a); else drawBar(cx,cy,a,kind==='splitter');
+  if(kind==='prism') drawPrism(cx,cy,a); else drawBar(cx,cy,a,kind==='splitter',t);
   if(cur.hintUntil>t && cur.hintSol){
     var so=cur.hintSol.get(c.x+","+c.y);
     if(so!==undefined && so!==c.o) drawGhost(cx,cy,angOf(so));
@@ -1852,7 +1931,7 @@ function drawGameRotatable(c,kind,t,dt){
     rr(cx-cell*0.46,cy-cell*0.46,cell*0.92,cell*0.92,cell*0.14); ctx.stroke();
   }
 }
-function drawPortalLinks(portals,t){
+function drawPortalLinks(portals,t,usedSet){
   (portals||[]).forEach(function(p){
     ctx.save();
     ctx.strokeStyle='rgba(200,150,255,0.20)'; ctx.lineWidth=1.5;
@@ -1863,13 +1942,17 @@ function drawPortalLinks(portals,t){
 }
 function drawGameScene(t,dt){
   drawBoard(cur.lvl.w,cur.lvl.h,t);
-  drawPortalLinks(cur.lvl.portals,t);
+  drawPortalLinks(cur.lvl.portals,t,cur.trace?cur.trace.portals:null);
   cur.lvl.blocks.forEach(drawBlock);
   cur.lvl.filters.forEach(drawFilter);
   cur.lvl.gates.forEach(function(g){ drawGate(g,t); });
   (cur.lvl.shards||[]).forEach(function(s){ drawShard(s.x,s.y,cur.shardKeys.has(s.x+","+s.y),t); });
   drawEmitter(cur.lvl.emitter,t);
-  (cur.lvl.portals||[]).forEach(function(p){ drawPortalCell(p.a.x,p.a.y,t); drawPortalCell(p.b.x,p.b.y,t); });
+  var pu=cur.trace?cur.trace.portals:new Set();
+  (cur.lvl.portals||[]).forEach(function(p){
+    drawPortalCell(p.a.x,p.a.y,t,pu.has(p.a.x+","+p.a.y));
+    drawPortalCell(p.b.x,p.b.y,t,pu.has(p.b.x+","+p.b.y));
+  });
   litSet=cur.litKeys;
   cur.lvl.mirrors.forEach(function(m){ drawGameRotatable(m,'mirror',t,dt); });
   cur.lvl.splitters.forEach(function(s){ drawGameRotatable(s,'splitter',t,dt); });
@@ -1889,7 +1972,7 @@ function drawGameScene(t,dt){
     }
     ctx.save();
     ctx.globalAlpha=0.65;
-    drawBar(drag.px-r.left,drag.py-r.top,cur.vis.get(drag.m).a,false);
+    drawBar(drag.px-r.left,drag.py-r.top,cur.vis.get(drag.m).a,false,t);
     ctx.restore();
   }
   rings=rings.filter(function(rg){ return rg.life>0; });
@@ -1934,6 +2017,7 @@ function drawEditorScene(t){
   drawBoard(ed.w,ed.h,t);
   litSet = (edTrace && ed.valid && ed.valid.ok) ? litTargets(ed.valid.level,edTrace) : new Set();
   var shardLit = (edTrace && ed.valid && ed.valid.ok) ? edTrace.shards : new Set();
+  var pu = (edTrace && ed.valid && ed.valid.ok) ? edTrace.portals : new Set();
   var pk=[];
   ed.cells.forEach(function(c,k){ if(c.t==='portal') pk.push(k); });
   if(pk.length===2){
@@ -1946,16 +2030,16 @@ function drawEditorScene(t){
   }
   ed.cells.forEach(function(c,k){
     var xy=k.split(',').map(Number), cx=px(xy[0]), cy=py(xy[1]);
-    if(c.t==='mirror') drawBar(cx,cy,angOf(c.o||0),false);
-    else if(c.t==='splitter') drawBar(cx,cy,angOf(c.o||0),true);
-    else if(c.t==='movable'){ drawMovableMarks(cx,cy); drawBar(cx,cy,angOf(c.o||0),false); }
+    if(c.t==='mirror') drawBar(cx,cy,angOf(c.o||0),false,t);
+    else if(c.t==='splitter') drawBar(cx,cy,angOf(c.o||0),true,t);
+    else if(c.t==='movable'){ drawMovableMarks(cx,cy); drawBar(cx,cy,angOf(c.o||0),false,t); }
     else if(c.t==='prism') drawPrism(cx,cy,angOf(c.o||0));
     else if(c.t==='block') drawBlock({x:xy[0],y:xy[1]});
     else if(c.t==='filter') drawFilter({x:xy[0],y:xy[1],c:c.c});
     else if(c.t==='gate') drawGate({x:xy[0],y:xy[1],d:(c.d!=null?c.d:1)},t);
     else if(c.t==='shard') drawShard(xy[0],xy[1],shardLit.has(k),t);
     else if(c.t==='target') drawTarget({x:xy[0],y:xy[1],c:c.c||0},t,edTrace);
-    else if(c.t==='portal') drawPortalCell(xy[0],xy[1],t);
+    else if(c.t==='portal') drawPortalCell(xy[0],xy[1],t,pu.has(k));
   });
   if(ed.emitter) drawEmitter(ed.emitter,t);
   drawBeams(edTrace,ed.emitter,t);
