@@ -77,7 +77,7 @@
   }
   .iconbtn:hover{ background:rgba(255,255,255,.12); }
   .iconbtn:active{ transform:scale(.9); }
-  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:230px; }
+  #dots{ display:flex; gap:4px; margin:0 4px; flex-wrap:wrap; max-width:250px; }
   .dot{ width:8px; height:8px; border-radius:50%; background:#2a3450; border:1px solid #3b4a72; }
   .dot.done{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 8px rgba(95,224,255,.7); }
   .dot.cur{ border-color:#c9b2ff; box-shadow:0 0 0 3px rgba(201,178,255,.22); }
@@ -217,11 +217,11 @@
 <div id="app">
   <header>
     <h1>✦ LICHTPFAD ✦</h1>
-    <p>Das Licht-Rätsel · Replay · Streaks · Editor</p>
+    <p>Das Licht-Rätsel · Endlos · Medaillen · Editor</p>
   </header>
   <div id="topbar">
     <div id="lvlinfo">
-      <span id="lvlnum">Level 1/26</span>
+      <span id="lvlnum">Level 1/28</span>
       <span id="lvlname">–</span>
     </div>
     <div id="tb-right">
@@ -276,6 +276,7 @@ function getRots(level){ return [].concat(level.mirrors||[],level.splitters||[],
 function vib(p){ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 var reduceMotion=false;
 try{ reduceMotion=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(e){}
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 
 // ================= Fullscreen =================
 var fsAutoDone=false;
@@ -323,6 +324,7 @@ var TCOL=[
  {lit1:'#ffe3f6',lit2:'#ff4dc4',un:'rgba(255,120,220,0.15)',stU:'rgba(255,150,230,0.80)',stL:'#ffd2f0',gl:'255,120,220'},
  {lit1:'#e0fbfb',lit2:'#22c9c9',un:'rgba(90,230,230,0.15)', stU:'rgba(130,240,240,0.80)',stL:'#d2ffff',gl:'90,230,230'},
 ];
+var MEDAL=['🥉','','🥇'];
 
 var LEVELS=[
  {name:"Erster Strahl", hint:"Tippe auf den Spiegel, um ihn zu kippen – leite den Strahl zum Kristall.",
@@ -441,6 +443,18 @@ var LEVELS=[
   rotors:[{x:5,y:3,o:0},{x:8,y:0,o:0}],
   mirrors:[{x:2,y:0,o:1},{x:5,y:6,o:0},{x:8,y:5,o:0},{x:9,y:6,o:1}],
   targets:[{x:9,y:5,c:4},{x:2,y:6,c:3}], shards:[{x:8,y:3}]},
+ {name:"Spiegel-Salon", hint:"Drei Kristalle, ein Portal – und überall Spiegel.",
+  w:10,h:7, emitter:{x:0,y:3,d:1},
+  splitters:[{x:4,y:3,o:1},{x:7,y:5,o:1}],
+  mirrors:[{x:4,y:0,o:1},{x:8,y:0,o:0}],
+  portals:[{a:{x:6,y:3},b:{x:6,y:5}}],
+  targets:[{x:8,y:2},{x:9,y:5},{x:7,y:1}], shards:[{x:8,y:1}]},
+ {name:"Finalissima", hint:"Das letzte Rätsel: Rotor-Timing + Misch-Kristall. Viel Glück!",
+  w:10,h:7, emitter:{x:0,y:3,d:1},
+  prism:[{x:2,y:3,o:1}],
+  rotors:[{x:5,y:3,o:0},{x:8,y:0,o:0}],
+  mirrors:[{x:5,y:5,o:0},{x:2,y:0,o:1}],
+  targets:[{x:8,y:5,c:4},{x:2,y:6,c:3}], shards:[{x:8,y:2}]},
 ];
 
 var DAILY=[
@@ -484,6 +498,8 @@ var ACH=[
  {id:'sharer',   icon:'📤', name:'Architekt',      desc:'Level-Code erzeugt.'},
  {id:'daily',    icon:'📅', name:'Tageslicht',     desc:'Tagesrätsel gelöst.'},
  {id:'streak',   icon:'🔥', name:'Dranbleiber',     desc:'3 Tage in Folge Tagesrätsel gelöst.'},
+ {id:'wander',   icon:'🌌', name:'Sternenwanderer', desc:'10 Endlos-Level gelöst.'},
+ {id:'gold',     icon:'', name:'Goldjäger',      desc:'5 Gold-Medaillen gesammelt.'},
  {id:'zen',      icon:'🪷', name:'Erleuchtet',     desc:'Level im Zen-Modus gelöst.'},
  {id:'blitz',    icon:'⏱', name:'Blitzmeister',    desc:'Blitz-Run unter 90 Sekunden.'},
  {id:'duel',     icon:'⚔', name:'Duellant',       desc:'Ein 2-Spieler-Duell beendet.'},
@@ -513,6 +529,10 @@ function totalShards(){
   var n=0; for(var k in state.shardMap) n+=state.shardMap[k];
   return n;
 }
+function goldCount(){
+  var n=0; state.medals.forEach(function(m){ if(m===3) n++; });
+  return n;
+}
 
 // ================= DOM =================
 var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
@@ -533,26 +553,26 @@ var downPos=null, downCellObj=null, lastRotKey='', lastRotT=0, lastDragT=0;
 var BSTARS=[];
 (function(){ for(var i=0;i<46;i++) BSTARS.push({x:Math.random(),y:Math.random(),z:0.3+Math.random()*0.7,ph:Math.random()*6.28}); })();
 var state={ screen:'hub', started:false, current:0, maxUnlocked:0, theme:0, zen:false, cb:false, hard:false,
-            stars:new Array(LEVELS.length).fill(0), totalMoves:0,
+            stars:new Array(LEVELS.length).fill(0), medals:new Array(LEVELS.length).fill(0), totalMoves:0,
             bestTimes:new Array(LEVELS.length).fill(null),
             wins:0, autos:0, duels:0, plays:0, ach:{}, shardMap:{},
-            streak:0, lastDaily:null,
+            streak:0, lastDaily:null, endlessWins:0, endlessN:0, endlessSeed:0,
             blitzBest:null, blitzSeq:null, blitzPos:0, blitzT0:0, blitzTimes:[],
             duel:null,
             dailyBest:0, dailyKey:'', custom:[], customSeq:1 };
 
-var SAVEKEY='lichtpfad_save_v1';
+var SAVEKEY='lichtpfad_save_v2';
 var saveT=null;
 function queueSave(){ if(saveT) clearTimeout(saveT); saveT=setTimeout(saveGame,250); }
 function saveGame(){
   try{
     localStorage.setItem(SAVEKEY,JSON.stringify({
-      stars:state.stars, maxUnlocked:state.maxUnlocked, bestTimes:state.bestTimes,
+      stars:state.stars, medals:state.medals, maxUnlocked:state.maxUnlocked, bestTimes:state.bestTimes,
       shardMap:state.shardMap, ach:state.ach, blitzBest:state.blitzBest,
       custom:state.custom, customSeq:state.customSeq, wins:state.wins, autos:state.autos,
       duels:state.duels, plays:state.plays, totalMoves:state.totalMoves,
       theme:state.theme, cb:state.cb, zen:state.zen, hard:state.hard,
-      streak:state.streak, lastDaily:state.lastDaily,
+      streak:state.streak, lastDaily:state.lastDaily, endlessWins:state.endlessWins,
       sound:soundOn, music:musicOn, current:state.current
     }));
   }catch(e){}
@@ -563,6 +583,7 @@ function loadGame(){
     if(!raw) return;
     var d=JSON.parse(raw);
     if(d.stars && d.stars.length===state.stars.length) state.stars=d.stars;
+    if(d.medals && d.medals.length===state.medals.length) state.medals=d.medals;
     if(typeof d.maxUnlocked==='number') state.maxUnlocked=Math.min(LEVELS.length-1,d.maxUnlocked);
     if(d.bestTimes && d.bestTimes.length===state.bestTimes.length) state.bestTimes=d.bestTimes;
     if(d.shardMap) state.shardMap=d.shardMap;
@@ -581,6 +602,7 @@ function loadGame(){
     if(typeof d.hard==='boolean') state.hard=d.hard;
     if(typeof d.streak==='number') state.streak=d.streak;
     if(typeof d.lastDaily==='string') state.lastDaily=d.lastDaily;
+    if(typeof d.endlessWins==='number') state.endlessWins=d.endlessWins;
     if(typeof d.sound==='boolean') soundOn=d.sound;
     if(typeof d.music==='boolean') musicOn=d.music;
     if(typeof d.current==='number') state.current=Math.min(LEVELS.length-1,d.current);
@@ -828,6 +850,41 @@ function litTargets(level,trace){
 }
 function evalWin(level,trace){ return litTargets(level,trace).size===level.targets.length; }
 
+// ================= Prozedurale Endlos-Level =================
+function genLevel(seed){
+  var rnd=mulberry32(seed);
+  var w=8,h=6;
+  var ey=1+Math.floor(rnd()*(h-2));
+  var x1=2+Math.floor(rnd()*(w-5));
+  var y2=Math.floor(rnd()*h);
+  if(y2===ey) y2=(ey+2)%h;
+  var x2=Math.min(w-1, x1+1+Math.floor(rnd()*(w-2-x1)));
+  var m1o=(y2>ey)?1:0;
+  var dIn=(y2>ey)?2:0;
+  var m2o=(dIn===2)?1:0;
+  var mirrors=[{x:x1,y:ey,o:m1o},{x:x1,y:y2,o:m2o}];
+  var L={w:w,h:h,emitter:{x:0,y:ey,d:1},mirrors:mirrors,
+    targets:[{x:x2,y:y2}],blocks:[],shards:[],
+    name:'Endlos #'+(seed%997)};
+  mirrors.forEach(function(m){ if(rnd()<0.6) m.o^=1; });
+  if(evalWin(L,traceLevel(L,null))) mirrors[0].o^=1;
+  for(var i=0;i<3;i++){
+    var bx=Math.floor(rnd()*w), by=Math.floor(rnd()*h);
+    if(bx===0) continue;
+    if(bx===x1&&by===ey) continue;
+    if(bx===x1&&by===y2) continue;
+    if(bx===x2&&by===y2) continue;
+    if(by===ey&&bx<x1) continue;
+    if(by===y2&&bx>x1) continue;
+    L.blocks.push({x:bx,y:by});
+  }
+  if(rnd()<0.5){
+    var sy=Math.round((ey+y2)/2);
+    L.shards=[{x:x1,y:Math.max(0,Math.min(h-1,sy))}];
+  }
+  return L;
+}
+
 // ================= Löser =================
 function solve(level){
   if((level.rotors||[]).length) return null;
@@ -924,7 +981,7 @@ function startLevel(levelObj, mode, meta){
     name:src.name||'Rätsel', hint:src.hint||''
   };
   cur={ idx:(meta&&meta.idx)||0, token:{}, lvl:lvl, mode:mode, meta:(meta||{}), src:levelObj,
-        moves:0, won:false, earned:0, litKeys:new Set(), shardKeys:new Set(), usedHelp:false,
+        moves:0, won:false, earned:0, medal:0, litKeys:new Set(), shardKeys:new Set(), usedHelp:false,
         hist:[], rec:[], replay:null,
         hintUntil:0, hintSol:null,
         solution:null, autoUsed:false,
@@ -959,6 +1016,11 @@ function enterDaily(){
   if(state.dailyKey!==tk){ state.dailyKey=tk; state.dailyBest=0; }
   startLevel(DAILY[getDailyIdx()],'daily',{});
 }
+function startEndless(){
+  state.endlessN=0;
+  state.endlessSeed=Math.floor(Date.now()/86400000)*1000;
+  startLevel(genLevel(state.endlessSeed),'endless',{});
+}
 function shufflePick(n,k){
   var idx=[]; for(var i=0;i<n;i++) idx.push(i);
   for(var j=idx.length-1;j>0;j--){ var r=(Math.random()*(j+1))|0; var t=idx[j]; idx[j]=idx[r]; idx[r]=t; }
@@ -977,6 +1039,7 @@ function startDuel(){
 }
 function px(gx){ return pad+gx*cell+cell/2; }
 function py(gy){ return pad+gy*cell+cell/2; }
+function parTime(level){ return ((level.opt!=null?level.opt:3)*4+12); }
 
 function retrace(silent){
   cur.trace=traceLevel(cur.lvl,null);
@@ -1011,7 +1074,6 @@ function winLevel(){
   cur.won=true; cur.flashT=performance.now();
   cur.timeSec=(performance.now()-cur.t0)/1000;
   if(cur.replay){
-    // Replay: nur Optik, keine Stats
     if(!reduceMotion){ shake=1; confettiRain(); }
     cur.lvl.targets.forEach(function(t){ burst(px(t.x),py(t.y),true,'spark'); rings.push({x:px(t.x),y:py(t.y),r:cell*0.3,life:1}); });
     sWin();
@@ -1019,10 +1081,14 @@ function winLevel(){
   }
   var opt=cur.opt!=null?cur.opt:cur.moves;
   cur.earned = cur.autoUsed ? 1 : (cur.moves<=opt ? 3 : cur.moves<=opt+2 ? 2 : 1);
+  // Medaille nach Zeit
+  var par=parTime(cur);
+  cur.medal = cur.timeSec<=par*0.6?3 : (cur.timeSec<=par?2:1);
   state.wins++;
   if(cur.autoUsed) state.autos++;
   if(cur.mode==='campaign' && !state.zen){
     state.stars[cur.idx]=Math.max(state.stars[cur.idx],cur.earned);
+    state.medals[cur.idx]=Math.max(state.medals[cur.idx],cur.medal);
     state.totalMoves+=cur.moves;
     state.maxUnlocked=Math.min(LEVELS.length-1, Math.max(state.maxUnlocked, cur.idx+1));
     var bt=state.bestTimes[cur.idx];
@@ -1030,11 +1096,17 @@ function winLevel(){
     var prevSh=state.shardMap[cur.idx]||0;
     if(cur.shardKeys.size>prevSh) state.shardMap[cur.idx]=cur.shardKeys.size;
     if(state.hard && cur.moves<=opt && !cur.usedHelp) unlock('hard');
+    if(goldCount()>=5) unlock('gold');
   }
   if(cur.mode==='campaign' && state.zen){
     state.maxUnlocked=Math.min(LEVELS.length-1, Math.max(state.maxUnlocked, cur.idx+1));
   }
   if(cur.mode==='blitz'){ state.blitzTimes.push(cur.timeSec); }
+  if(cur.mode==='endless'){
+    state.endlessN++;
+    state.endlessWins++;
+    if(state.endlessWins>=10) unlock('wander');
+  }
   if(cur.mode==='daily'){
     var today=new Date().toDateString();
     var yest=new Date(Date.now()-86400000).toDateString();
@@ -1113,7 +1185,7 @@ function fmtDate(d){ return d.toLocaleDateString('de-DE',{weekday:'short',day:'n
 function getDailyIdx(){ return Math.floor(Date.now()/86400000)%DAILY.length; }
 function totalStars(){ return state.stars.reduce(function(a,b){ return a+b; },0); }
 function fmtTime(s){ return s.toFixed(1).replace('.',',')+' s'; }
-var MODELABEL={campaign:'Kampagne', daily:'Tagesrätsel', custom:'Eigenbau', blitz:'Blitz', duel:'Duell', test:'Test', replay:'Replay'};
+var MODELABEL={campaign:'Kampagne', daily:'Tagesrätsel', custom:'Eigenbau', blitz:'Blitz', duel:'Duell', test:'Test', replay:'Replay', endless:'Endlos'};
 
 function updateHUD(){
   if(!cur) return;
@@ -1132,6 +1204,8 @@ function updateHUD(){
     elLvlnum.textContent='Eigenbau'; elLvlname.textContent=cur.lvl.name; elDots.innerHTML='';
   } else if(cur.mode==='blitz'){
     elLvlnum.textContent='⏱ Blitz '+(state.blitzPos+1)+'/5'; elLvlname.textContent=cur.lvl.name; elDots.innerHTML='';
+  } else if(cur.mode==='endless'){
+    elLvlnum.textContent='∞ Endlos '+(state.endlessN+1); elLvlname.textContent=cur.lvl.name; elDots.innerHTML='';
   } else if(cur.mode==='duel'){
     var D=state.duel;
     elLvlnum.textContent='⚔ Runde '+(D.round+1)+'/3 · Spieler '+D.player;
@@ -1175,9 +1249,10 @@ function showHub(){
   showOverlay(
    '<div class="panel">'+
      '<div class="big brand">✦ LICHTPFAD ✦</div>'+
-     '<p class="sub">📊 '+state.wins+' Siege · '+totalStars()+'/'+(LEVELS.length*3)+' ★ · '+totalShards()+' ✦ · 🏅 '+achCount+'/'+ACH.length+'</p>'+
+     '<p class="sub">📊 '+state.wins+' Siege · '+totalStars()+'/'+(LEVELS.length*3)+' ★ · '+goldCount()+' 🥇 ·  '+achCount+'/'+ACH.length+'</p>'+
      '<div class="menu">'+
        '<button class="mbtn" id="mPlay">'+(state.started?'▶ Weiter spielen':'▶ Los geht\u2019s')+' <span>Kampagne · Level '+(state.current+1)+'/'+LEVELS.length+'</span></button>'+
+       '<button class="mbtn" id="mEndless">∞ Endlos <span>'+state.endlessWins+' gelöst</span></button>'+
        '<button class="mbtn" id="mDuel">⚔ Duell <span>2 Spieler · Hotseat</span></button>'+
        '<button class="mbtn" id="mBlitz">⏱ Blitz-Modus <span>'+blitzSub+'</span></button>'+
        '<button class="mbtn" id="mDaily">📅 Tagesrätsel <span>'+dailySub+'</span></button>'+
@@ -1192,7 +1267,7 @@ function showHub(){
      '<ul class="rules">'+
        '<li>🪞 Tipp = kippen · 🪞 Ziehen = verschieben · ✦ Splitter aufsammeln</li>'+
        '<li>⏱ Rotoren kippen im Takt · 🎨 Filter · 🌀 Portale · ⏩ Ventile · 🩷🩵 Mix</li>'+
-       '<li>🎬 Nach dem Sieg: Replay deiner Lösung ansehen · 🔥 Daily-Streaks!</li>'+
+       '<li>🎬 Replay nach dem Sieg · 🥇 Medaillen für schnelle Zeiten · ∞ Endlos!</li>'+
      '</ul>'+
    '</div>');
   document.getElementById('mPlay').addEventListener('click',function(){
@@ -1201,6 +1276,7 @@ function showHub(){
     else loadCampaign(state.current);
     beep(660,0.15,'sine',0.1);
   });
+  document.getElementById('mEndless').addEventListener('click',function(){ ensureAudio(); hideOverlay(); maybeAutoFS(); startEndless(); });
   document.getElementById('mDuel').addEventListener('click',function(){ ensureAudio(); hideOverlay(); maybeAutoFS(); startDuel(); });
   document.getElementById('mBlitz').addEventListener('click',function(){ ensureAudio(); hideOverlay(); maybeAutoFS(); startBlitz(); });
   document.getElementById('mDaily').addEventListener('click',function(){ ensureAudio(); hideOverlay(); maybeAutoFS(); enterDaily(); });
@@ -1264,7 +1340,7 @@ function showAch(){
   showOverlay(
    '<div class="panel">'+
      '<div class="big">🏅 Erfolge</div>'+
-     '<p class="sub">'+state.plays+' Runden · '+state.wins+' Siege · '+state.autos+'× 🤖 · '+state.duels+' Duelle · 🔥'+state.streak+'</p>'+
+     '<p class="sub">'+state.plays+' Runden · '+state.wins+' Siege · ∞ '+state.endlessWins+' · 🔥'+state.streak+'</p>'+
      '<div style="margin-top:12px">'+rows+'</div>'+
      '<div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="btnAchBack">← Zurück</button></div>'+
    '</div>');
@@ -1275,10 +1351,11 @@ function showSelect(){
   var cards=LEVELS.map(function(L,i){
     var unlocked=state.zen || i<=state.maxUnlocked;
     var s=state.stars[i];
+    var md=state.medals[i]>0?MEDAL[state.medals[i]-1]:'';
     return '<button class="card '+(unlocked?'':'locked')+' '+(cur&&cur.mode==='campaign'&&i===cur.idx?'cur':'')+'" data-i="'+i+'">'+
       '<span class="cnum">'+(i+1)+'</span>'+
       '<span class="cname">'+(unlocked?L.name:'???')+'</span>'+
-      '<span class="cstars">'+(unlocked?(s>0?'★'.repeat(s)+'☆'.repeat(3-s):'···'):'🔒')+'</span>'+
+      '<span class="cstars">'+(unlocked?(s>0?'★'.repeat(s)+'☆'.repeat(3-s):'···'):'🔒')+(unlocked&&md?' '+md:'')+'</span>'+
     '</button>';
   }).join('');
   showOverlay(
@@ -1309,7 +1386,7 @@ function starsHtml(n){
 function showWinOverlay(){
   var m=cur.mode;
   var head, buttons;
-  var replayBtn=(cur.rec&&cur.rec.length)?'<button class="btn ghost" id="btnReplay">🎬 Replay</button>':'';
+  var replayBtn=(cur.rec&&cur.rec.length&&m!=='endless')?'<button class="btn ghost" id="btnReplay">🎬 Replay</button>':'';
   if(m==='campaign'){
     var last=cur.idx===LEVELS.length-1;
     head=(state.zen?'🧘 Zen: ':(cur.earned===3?'✨ Perfekt!':'✨ Geschafft!'));
@@ -1326,6 +1403,10 @@ function showWinOverlay(){
   } else if(m==='blitz'){
     head='⏱ Blitz '+(state.blitzPos+1)+'/5 geschafft!';
     buttons='<button class="btn" id="btnNext">Weiter →</button>';
+  } else if(m==='endless'){
+    head='∞ Endlos-Level '+(state.endlessN)+' geschafft!';
+    buttons='<button class="btn" id="btnNext">∞ Weiter</button>'+
+             '<button class="btn ghost" id="btnToHub">⊞ Menü</button>';
   } else if(m==='duel'){
     var D=state.duel;
     if(D.player===1){
@@ -1344,11 +1425,12 @@ function showWinOverlay(){
   var au=cur.autoUsed?' · 🤖':'';
   var sh=(cur.lvl.shards&&cur.lvl.shards.length)?(' · ✦ '+cur.shardKeys.size+'/'+cur.lvl.shards.length):'';
   var du=(m==='duel')?(' · ⚔ '+state.duel.scores[0]+':'+state.duel.scores[1]):'';
+  var md=(cur.medal>0)?(' · '+MEDAL[cur.medal-1]):'';
   showOverlay(
    '<div class="panel">'+
      '<div class="big">'+head+'</div>'+
      starsHtml(cur.earned)+
-     '<p class="stat">Züge: '+cur.moves+' · Optimum: '+(cur.opt!=null?cur.opt:'–')+' · ⏱ '+fmtTime(cur.timeSec)+sh+bt+au+du+'</p>'+
+     '<p class="stat">Züge: '+cur.moves+' · Optimum: '+(cur.opt!=null?cur.opt:'–')+' · ⏱ '+fmtTime(cur.timeSec)+md+sh+bt+au+du+'</p>'+
      '<div class="btnrow">'+buttons+'</div>'+
    '</div>');
   var bn=document.getElementById('btnNext');
@@ -1358,6 +1440,10 @@ function showWinOverlay(){
       state.blitzPos++;
       if(state.blitzPos<5){ startLevel(LEVELS[state.blitzSeq[state.blitzPos]],'blitz',{}); }
       else showBlitzEnd();
+      return;
+    }
+    if(m==='endless'){
+      startLevel(genLevel(state.endlessSeed+state.endlessN),'endless',{});
       return;
     }
     if(m==='duel'){
@@ -1436,7 +1522,7 @@ function showEndOverlay(){
      '</div>'+
    '</div>');
   document.getElementById('btnAgainC').addEventListener('click',function(){
-    state.stars.fill(0); state.totalMoves=0; state.maxUnlocked=0; state.bestTimes.fill(null);
+    state.stars.fill(0); state.totalMoves=0; state.maxUnlocked=0; state.bestTimes.fill(null); state.medals.fill(0);
     queueSave();
     hideOverlay(); loadCampaign(0);
   });
