@@ -340,13 +340,13 @@ var LEVELS=[
   prism:[{x:2,y:3,o:1}],
   mirrors:[{x:6,y:3,o:0},{x:2,y:6,o:0},{x:6,y:6,o:1},{x:2,y:0,o:1}],
   targets:[{x:6,y:5,c:5},{x:8,y:0,c:2}]},
- {name:"Cyan-Finale", hint:"Cyan 🩵 = GRÜN + BLAU. Ventile, Portale, alles dabei!",
+ {name:"Cyan-Finale", hint:"Cyan 🩵 = GRÜN + BLAU. Blau nimmt die Abkürzung durchs Portal!",
   w:10,h:7, emitter:{x:0,y:3,d:1},
   prism:[{x:2,y:3,o:1}],
-  mirrors:[{x:2,y:0,o:1},{x:8,y:0,o:0},{x:2,y:6,o:0},{x:6,y:6,o:1}],
+  mirrors:[{x:2,y:0,o:1},{x:6,y:0,o:0},{x:2,y:6,o:0},{x:4,y:6,o:1}],
   gates:[{x:5,y:3,d:1}],
-  portals:[{a:{x:6,y:6},b:{x:6,y:4}}],
-  targets:[{x:9,y:3,c:1},{x:6,y:5,c:6}], shards:[{x:6,y:4}]},
+  portals:[{a:{x:4,y:1},b:{x:6,y:6}}],
+  targets:[{x:9,y:3,c:1},{x:6,y:5,c:6}], shards:[{x:4,y:4}]},
  {name:"Zwillingslicht", hint:"Cyan braucht Grün UND Blau – das Ventil bewacht das Rot.",
   w:10,h:7, emitter:{x:0,y:3,d:1},
   prism:[{x:2,y:3,o:0}],
@@ -927,8 +927,8 @@ function showHub(){
      '</div>'+
      customHtml+
      '<ul class="rules">'+
-       '<li>🪞 Tipp = kippen · 🪞⇄ Ziehen = verschieben · ✦ Splitter aufsammeln</li>'+
-       '<li>🎨 Filter ·  Portale · ⏩ Ventile · 🟡🩷🩵 Mix = zwei Farben gleichzeitig</li>'+
+       '<li>🪞 Tipp = kippen · 🪞 Ziehen = verschieben · ✦ Splitter aufsammeln</li>'+
+       '<li>🎨 Filter ·  Portale ·  Ventile · 🩷🩵 Mix = zwei Farben gleichzeitig</li>'+
        '<li>🎨 Theme & 🧘 Zen oben/im Menü · 🤖 löst notfalls jedes Level.</li>'+
      '</ul>'+
    '</div>');
@@ -1452,14 +1452,15 @@ btnReset.addEventListener('click',function(){
   }
 });
 btnHint.addEventListener('click',function(){
-  if(!cur||cur.won||!cur.hintSol||(state.screen!=='play'&&state.screen!=='test')) return;
+  if(!cur||cur.won||(state.screen!=='play'&&state.screen!=='test')) return;
+  if(!cur.hintSol){ showToast('⚠ Kein Lösungsweg für dieses Level gefunden.'); beep(180,0.2,'sawtooth',0.06); return; }
   cur.usedHelp=true;
   cur.hintUntil=performance.now()+2800;
   sHint();
 });
 btnAuto.addEventListener('click',function(){
-  if(!cur||cur.won||!cur.solution) return;
-  if(state.screen!=='play' && state.screen!=='test') return;
+  if(!cur||cur.won||(state.screen!=='play'&&state.screen!=='test')) return;
+  if(!cur.solution){ showToast('⚠ Keine Lösung verfügbar – Level prüfen.'); beep(180,0.2,'sawtooth',0.06); return; }
   cur.autoUsed=true;
   cur.usedHelp=true;
   var S=cur.solution;
@@ -1564,7 +1565,6 @@ function drawBoard(w,h,t){
   bg.addColorStop(0,TH.bg1); bg.addColorStop(1,TH.bg2);
   ctx.fillStyle=bg; rr(1,1,cw-2,ch-2,15); ctx.fill();
   ctx.strokeStyle='rgba('+TH.grid+',0.16)'; ctx.lineWidth=1; ctx.stroke();
-  // Parallax-Sterne
   BSTARS.forEach(function(s){
     var sx=(s.x*cw + t*0.004*s.z)%cw;
     var sy=(s.y*ch + t*0.0015*s.z)%ch;
@@ -1772,7 +1772,6 @@ function drawBar(cx,cy,ang,isSplit,t){
     ctx.strokeStyle='rgba(20,30,50,0.6)'; ctx.lineWidth=1; ctx.stroke();
     ctx.strokeStyle='rgba(255,255,255,0.85)'; ctx.lineWidth=Math.max(1.2,cell*0.02);
     ctx.beginPath(); ctx.moveTo(-L/2+4,-th*0.26); ctx.lineTo(L/2-4,-th*0.26); ctx.stroke();
-    // Glanz-Sweep
     var ph=((t*0.00022)+(cx%97)/97)%1;
     var gx=-L/2+ph*L;
     var gg=ctx.createLinearGradient(gx-cell*0.12,0,gx+cell*0.12,0);
